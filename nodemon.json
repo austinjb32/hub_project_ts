@@ -1,0 +1,8 @@
+{
+    "env":{
+        "MONGO_USER":"austinjb32",
+        "MONGO_PASSWORD":"123Gmail",
+        "MONGO_DB":"main",
+        "BCRYPT_CODE":"pseudomeunocode"
+    }
+}

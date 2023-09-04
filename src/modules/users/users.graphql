@@ -1,0 +1,34 @@
+type User @key(fields:"_id"){
+    _id:ID!
+    email:String!
+    name:String!
+    bio:String
+    imageUrl:String
+    isAdmin:String
+    createdAt:String!
+    updatedAt:String!
+    followers:Int,
+    following:Int
+}
+
+type AuthData{
+    token:String!
+    userId:String!
+}
+
+
+input UserInputData{
+    email:String!
+    name:String!
+    password:String!
+}
+
+
+extend type Query{
+login(email:String!, password:String!): AuthData!
+viewUser(userID:ID!):User!
+}
+
+extend type Mutation{
+    createUser(userInput:UserInputData):User!
+}
