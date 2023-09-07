@@ -7,7 +7,9 @@ const errorResponse_1 = tslib_1.__importDefault(require("./src/errorResponse"));
 const mongoose_1 = tslib_1.__importDefault(require("mongoose"));
 const apollo_server_express_1 = require("apollo-server-express");
 const modules_1 = require("./src/modules");
+const http_1 = tslib_1.__importDefault(require("http"));
 const app = (0, express_1.default)();
+const httpServer = http_1.default.createServer(app);
 app.use(body_parser_1.default.json());
 app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -23,8 +25,9 @@ const server = new apollo_server_express_1.ApolloServer({
     schema: modules_1.Modules.schemas,
     csrfPrevention: true,
     introspection: true,
-    context: async () => ({
-        dataSource: modules_1.Modules.dataSource
+    context: async ({ req }) => ({
+        dataSource: modules_1.Modules.dataSource,
+        accessToken: req.headers.authorization
     }),
 });
 const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.pubnynq.mongodb.net/${process.env.MONGO_DB}`;

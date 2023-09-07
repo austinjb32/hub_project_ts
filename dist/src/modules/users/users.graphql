@@ -1,14 +1,16 @@
-type User @key(fields:"_id"){
-    _id:ID!
+type User{
+    _id:ID
     email:String!
     name:String!
+    password:String
     bio:String
     imageUrl:String
-    isAdmin:String
-    createdAt:String!
-    updatedAt:String!
+    isAdmin:Boolean
+    createdAt:String
+    updatedAt:String
     followers:Int,
-    following:Int
+    following:Int,
+    lastActivity:String
 }
 
 type AuthData{
@@ -16,6 +18,11 @@ type AuthData{
     userId:String!
 }
 
+type Activity{
+    _id:ID
+    user:ID!
+    track:String!
+}
 
 input UserInputData{
     email:String!
@@ -24,11 +31,14 @@ input UserInputData{
 }
 
 
+
+
 extend type Query{
 login(email:String!, password:String!): AuthData!
 viewUser(userID:ID!):User!
+getUserIdFromToken(token:String!):String!
 }
 
 extend type Mutation{
-    createUser(userInput:UserInputData):User!
+    createUser(userInput:UserInputData!):User!
 }

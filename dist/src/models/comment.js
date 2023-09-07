@@ -1,77 +1,24 @@
 "use strict";
-// import { Document, Model, Schema, Types, model } from "mongoose";
-// import { Goaltype } from "../../libs/types";
-// type IGoalEntry = Record<"status", boolean> &
-//   Record<"goalTitle" | "problemImage", string> &
-//   Record<"createdDate" | "updatedDate", Readonly<Date>> & {
-//     type: Goaltype;
-//     createdById: Types.ObjectId;
-//     parentOrgId: Types.ObjectId;
-//     lastUpdatedById: Types.ObjectId;
-//     problemId: Types.ObjectId;
-//     programId: Types.ObjectId;
-//   };
-// export interface IGoalEntrySchemaDocument extends IGoalEntry, Document {}
-// export type IGoalEntryDocument = Document<IGoalEntrySchemaDocument>;
-// export interface IGoalEntrySchemaModel
-//   extends Model<IGoalEntrySchemaDocument> {}
-// const GoalEntrySchema = new Schema<
-//   IGoalEntrySchemaDocument,
-//   IGoalEntrySchemaModel
-// >(
-//   {
-//     problemId: {
-//       type: Schema.Types.ObjectId,
-//       required: true,
-//       index: true,
-//       ref: "goal_problem",
-//     },
-//     programId: {
-//       type: Schema.Types.ObjectId,
-//       required: false,
-//       index: true,
-//     },
-//     parentOrgId: {
-//       type: Schema.Types.ObjectId,
-//       required: true,
-//       index: true,
-//     },
-//     goalTitle: {
-//       type: String,
-//       trim: true,
-//       index: true,
-//     },
-//     type: {
-//       type: String,
-//       enum: ["SYSTEM_GOAL", "CUSTOM_GOAL"],
-//       default: Goaltype.SystemGoal,
-//       index: true,
-//     },
-//     createdById: {
-//       type: Schema.Types.ObjectId,
-//       required: false,
-//       index: true,
-//     },
-//     lastUpdatedById: {
-//       type: Schema.Types.ObjectId,
-//       required: false,
-//       index: true,
-//     },
-//     status: {
-//       type: Boolean,
-//       required: false,
-//       default: false,
-//     },
-//   },
-//   {
-//     timestamps: {
-//       createdAt: "createdDate",
-//       updatedAt: "updatedDate",
-//     },
-//   }
-// );
-// export const GoalEntryModel = model<
-//   IGoalEntrySchemaDocument,
-//   IGoalEntrySchemaModel
-// >("goal_entry", GoalEntrySchema);
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib_1 = require("tslib");
+const mongoose_1 = tslib_1.__importDefault(require("mongoose"));
+const mongoose_2 = require("mongoose");
+const commentSchema = new mongoose_2.Schema({
+    content: {
+        required: true,
+        type: String,
+        default: null
+    },
+    post: {
+        type: mongoose_2.Schema.Types.ObjectId,
+        required: true,
+        ref: "Posts"
+    },
+    user: {
+        type: mongoose_2.Schema.Types.ObjectId,
+        ref: "Users",
+        required: true
+    }
+}, { timestamps: true });
+exports.default = mongoose_1.default.model("Comments", commentSchema);
 //# sourceMappingURL=comment.js.map

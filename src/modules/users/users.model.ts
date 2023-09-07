@@ -12,7 +12,7 @@ export interface IUserSchemaDocument extends Document {
   updatedAt: Date;
 }
 
-export type IGoalEntryDocument = Document<IUserSchemaDocument>;
+export type IUserDocument = Document<IUserSchemaDocument>;
 
 export interface IUserSchemaModel
   extends Model<IUserSchemaDocument> {}
@@ -40,7 +40,7 @@ IUserSchemaModel
     bio: {
       type: String,
       default: 'No Bio',
-      minlength: 10,
+      minlength: 5,
     },
     imageUrl: {
       type: String,

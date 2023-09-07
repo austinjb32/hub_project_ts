@@ -1,4 +1,5 @@
 import { GraphQLResolveInfo } from 'graphql';
+import { userContext } from '../src/libs/index';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
@@ -16,6 +17,13 @@ export type Scalars = {
   Float: { input: number; output: number; }
 };
 
+export type Activity = {
+  __typename?: 'Activity';
+  _id?: Maybe<Scalars['ID']['output']>;
+  track: Scalars['String']['output'];
+  user: Scalars['ID']['output'];
+};
+
 export type AuthData = {
   __typename?: 'AuthData';
   token: Scalars['String']['output'];
@@ -24,18 +32,46 @@ export type AuthData = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  createPost: Post;
   createUser: User;
 };
 
 
+export type MutationCreatePostArgs = {
+  postInput: PostInputData;
+};
+
+
 export type MutationCreateUserArgs = {
-  userInput?: InputMaybe<UserInputData>;
+  userInput: UserInputData;
+};
+
+export type Post = {
+  __typename?: 'Post';
+  _id?: Maybe<Scalars['ID']['output']>;
+  commentCount?: Maybe<Scalars['Int']['output']>;
+  content: Scalars['String']['output'];
+  createdAt?: Maybe<Scalars['String']['output']>;
+  creator?: Maybe<User>;
+  imageUrl?: Maybe<Scalars['String']['output']>;
+  isLiked?: Maybe<Scalars['Boolean']['output']>;
+  likesCount?: Maybe<Scalars['Int']['output']>;
+  shareCount?: Maybe<Scalars['Int']['output']>;
+  title: Scalars['String']['output'];
+  updatedAt?: Maybe<Scalars['String']['output']>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  getUserIdFromToken: Scalars['String']['output'];
   login: AuthData;
+  viewPost?: Maybe<Post>;
   viewUser: User;
+};
+
+
+export type QueryGetUserIdFromTokenArgs = {
+  token: Scalars['String']['input'];
 };
 
 
@@ -45,28 +81,41 @@ export type QueryLoginArgs = {
 };
 
 
+export type QueryViewPostArgs = {
+  postID: Scalars['ID']['input'];
+};
+
+
 export type QueryViewUserArgs = {
   userID: Scalars['ID']['input'];
 };
 
 export type User = {
   __typename?: 'User';
-  _id: Scalars['ID']['output'];
+  _id?: Maybe<Scalars['ID']['output']>;
   bio?: Maybe<Scalars['String']['output']>;
-  createdAt: Scalars['String']['output'];
+  createdAt?: Maybe<Scalars['String']['output']>;
   email: Scalars['String']['output'];
   followers?: Maybe<Scalars['Int']['output']>;
   following?: Maybe<Scalars['Int']['output']>;
   imageUrl?: Maybe<Scalars['String']['output']>;
-  isAdmin?: Maybe<Scalars['String']['output']>;
+  isAdmin?: Maybe<Scalars['Boolean']['output']>;
+  lastActivity?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
-  updatedAt: Scalars['String']['output'];
+  password?: Maybe<Scalars['String']['output']>;
+  updatedAt?: Maybe<Scalars['String']['output']>;
 };
 
 export type UserInputData = {
   email: Scalars['String']['input'];
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+};
+
+export type PostInputData = {
+  content: Scalars['String']['input'];
+  imageUrl?: InputMaybe<Scalars['String']['input']>;
+  title: Scalars['String']['input'];
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -141,62 +190,97 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Activity: ResolverTypeWrapper<Activity>;
   AuthData: ResolverTypeWrapper<AuthData>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
   Mutation: ResolverTypeWrapper<{}>;
+  Post: ResolverTypeWrapper<Post>;
   Query: ResolverTypeWrapper<{}>;
   String: ResolverTypeWrapper<Scalars['String']['output']>;
   User: ResolverTypeWrapper<User>;
   UserInputData: UserInputData;
+  postInputData: PostInputData;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  Activity: Activity;
   AuthData: AuthData;
   Boolean: Scalars['Boolean']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
   Mutation: {};
+  Post: Post;
   Query: {};
   String: Scalars['String']['output'];
   User: User;
   UserInputData: UserInputData;
+  postInputData: PostInputData;
 }>;
 
-export type AuthDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = ResolversObject<{
+export type ActivityResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Activity'] = ResolversParentTypes['Activity']> = ResolversObject<{
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  track?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type AuthDataResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = ResolversObject<{
   token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
+export type MutationResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'postInput'>>;
+  createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'userInput'>>;
 }>;
 
-export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+export type PostResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = ResolversObject<{
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  commentCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  content?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  creator?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  isLiked?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  likesCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  shareCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  title?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type QueryResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  getUserIdFromToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGetUserIdFromTokenArgs, 'token'>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'email' | 'password'>>;
+  viewPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryViewPostArgs, 'postID'>>;
   viewUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryViewUserArgs, 'userID'>>;
 }>;
 
-export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  _id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+export type UserResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  _id?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   bio?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  createdAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  createdAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   followers?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   following?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   imageUrl?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  isAdmin?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  isAdmin?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  lastActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  updatedAt?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  password?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type Resolvers<ContextType = any> = ResolversObject<{
+export type Resolvers<ContextType = userContext> = ResolversObject<{
+  Activity?: ActivityResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;
+  Post?: PostResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   User?: UserResolvers<ContextType>;
 }>;

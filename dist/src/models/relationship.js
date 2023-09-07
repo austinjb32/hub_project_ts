@@ -20,5 +20,6 @@ const relationshipSchema = new mongoose_2.Schema({
         default: null
     },
 }, { timestamps: true });
+relationshipSchema.index({ user: 1, following: 1 }, { unique: true });
 exports.default = mongoose_1.default.model("Relationships", relationshipSchema);
 //# sourceMappingURL=relationship.js.map

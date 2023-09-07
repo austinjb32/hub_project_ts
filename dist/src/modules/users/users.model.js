@@ -20,7 +20,7 @@ const userSchema = new mongoose_1.Schema({
     bio: {
         type: String,
         default: 'No Bio',
-        minlength: 10,
+        minlength: 5,
     },
     imageUrl: {
         type: String,

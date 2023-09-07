@@ -1,4 +1,4 @@
-schema: .\src\modules\users\users.graphql
+schema: ./src/modules/**/*.graphql
 generates:
   # Specify where our generated types should live.
   ./__generated__/resolvers-types.ts:
@@ -8,4 +8,7 @@ generates:
     config:
       useIndexSignature: true
       # More on this below!
-     # contextType: "../index#MyContext
+      contextType: "../src/libs/index#userContext"
+      # This section defines the mappers that will be used to map
+# between GraphQL types and your application's data models.
+  
