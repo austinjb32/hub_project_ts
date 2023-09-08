@@ -2,16 +2,10 @@ import express, { NextFunction } from "express";
 import bodyParser from "body-parser";
 import errorHandler from "./src/errorResponse";
 import mongoose from "mongoose";
-import { ApolloServer} from "apollo-server-express";
+import { ApolloServer,AuthenticationError,SyntaxError,UserInputError, ValidationError} from "apollo-server-express";
 import { Modules } from './src/modules';
-import { ApolloServerPluginInlineTraceDisabled } from "@apollo/server/plugin/disabled";
-import {ApolloServerPluginUsageReporting} from "@apollo/server/plugin/usageReporting"
-import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
-import { Module } from "module";
-import { userContext } from "./src/libs";
 import http from 'http';
-import { Request } from "express";
-import jwt from 'jsonwebtoken';
+import { error } from "console";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -41,9 +35,27 @@ const server=new ApolloServer({
     introspection:true,
     context: async ({req}) => ({ 
       dataSource:Modules.dataSource,
-      accessToken:req.headers.authorization
+      accessToken:req.headers.authorization,
+      loaders:true
      }),
-})
+     formatError: (error) => { // Use error as a parameter
+      if (error instanceof UserInputError) { // Check if the error is an instance of UserInputError
+        throw new Error('User Input error occurred'); // Throw a custom error message
+      }
+      if (error instanceof ValidationError) { // Check if the error is an instance of UserInputError
+        throw new Error('Validation Failed'); // Throw a custom error message
+      }
+      if (error instanceof AuthenticationError) { // Check if the error is an instance of UserInputError
+        throw new Error('Authentication Failed'); // Throw a custom error message
+      }
+      if (error instanceof SyntaxError) { // Check if the error is an instance of UserInputError
+        throw new Error('Syntax Failed'); // Throw a custom error message
+      }
+      
+      // Handle other errors here if needed
+      return error; // Return the original error if it's not a UserInputError
+    },
+  });
 
 
   

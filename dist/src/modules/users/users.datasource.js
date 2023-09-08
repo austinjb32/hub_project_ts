@@ -4,8 +4,22 @@ const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const bcrypt_1 = tslib_1.__importDefault(require("bcrypt")); // Import your types here
 const jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
+const validation_1 = require("../../middleware/validation");
 class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewUser(userId) {
+        const user = await this.model.findById(userId).lean().exec();
+        if (!user) {
+            return null;
+        }
+        return {
+            ...user,
+            _id: user._id.toString(),
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString(),
+            isAdmin: user.isAdmin,
+        };
+    }
+    async getUserById(userId) {
         const user = await this.model.findById(userId).lean().exec();
         if (!user) {
             return null;
@@ -24,10 +38,9 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             const error = new Error("User already exists");
             throw error;
         }
-        if (email == null ||
-            password == null) {
-            const error = new Error("No Input received");
-            throw error;
+        const validLogin = (0, validation_1.loginValidation)({ email, password });
+        if (validLogin.error) {
+            throw new Error(`${validLogin.error.name}${validLogin.error.message}`);
         }
         const hashedPassword = bcrypt_1.default.compareSync(password, user.password);
         if (!hashedPassword) {
@@ -37,19 +50,26 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             email: user.email,
             userId: user._id.toString(),
         }, "somesupersecretsecret", { expiresIn: "1h" });
+        let refreshToken;
+        if (user.isAdmin) {
+            refreshToken = jsonwebtoken_1.default.sign({
+                email: user.email,
+                userId: user._id.toString(),
+            }, "somesupersecretsecret", { expiresIn: "30d" });
+            context.refreshToken = refreshToken;
+            console.log(refreshToken);
+        }
         context.token = token;
-        return { token: token, userId: user._id.toString() };
+        return { token: token, userId: user._id.toString(), refreshToken: refreshToken };
     }
     async createUser(userInput) {
+        const validCreation = (0, validation_1.userCreationValidation)(userInput);
+        if (validCreation.error) {
+            throw new Error(`${validCreation.error.name}${validCreation.error.message}`);
+        }
         const user = await this.model.findOne({ email: userInput.email });
         if (user) {
             const error = new Error("User already exists");
-            throw error;
-        }
-        if (userInput.email == null ||
-            userInput.name == null ||
-            userInput.password == null) {
-            const error = new Error("No Input received");
             throw error;
         }
         const hashedPassword = await bcrypt_1.default.hash(userInput.password, 12);

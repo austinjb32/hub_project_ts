@@ -12,7 +12,7 @@ import postModel from "./posts/posts.model";
 import PostDataSource from "./posts/posts.datasource";
 
 import { TModule, userContext } from "../libs";
-import {userComposedResolvers,postComposedResolvers } from "../middleware/resolverCompostion";
+import {userComposedResolvers,postComposedResolvers } from "../middleware/Composition/resolverCompostion";
 const typeDefs = mergeTypeDefs(
     loadFilesSync(path.resolve(__dirname + "/**/*.graphql"), {
       extensions: ["graphql"],

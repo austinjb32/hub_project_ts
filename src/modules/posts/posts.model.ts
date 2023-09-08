@@ -1,13 +1,13 @@
-import { Document, Schema, Model, model } from "mongoose";
+import { Document, Schema, Model, model, ObjectId } from "mongoose";
 
 export interface IPostSchemaDocument extends Document{
-    title: String;
-    content: String;
-    imageUrl: String;
-    creator: Object;
+    title: string;
+    content: string;
+    imageUrl: string;
+    creator: ObjectId;
     shareCount:Number;
-    createdAt: String;
-    updatedAt: String;
+    createdAt: string;
+    updatedAt: string;
 }
 
 export type IPostDocument = Document<IPostSchemaDocument>;

@@ -4,6 +4,7 @@ import { Post } from "../../../__generated__/resolvers-types";
 import post from "../../models/post";
 import user from "../../models/user";
 import { userContext } from "../../libs";
+import { postCreationValidation } from "../../middleware/validation";
 
 export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>{
     async viewPost(args:string){
@@ -31,13 +32,15 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
         return formattedPost  
     }
     async createPost(postInput:Post,context:userContext){
-        if(!postInput){
-            throw new Error('No input');
-        }   
+        
+        const postCreateValidation= postCreationValidation(postInput);
+
+        if(postCreateValidation.error){
+            throw new Error(`${postCreateValidation.error.name}${postCreateValidation.error.message}`);
+          }
+      
 
         const creator = await user.findById(context.userId);
-
-        console.log(context,"hello");
 
         if(!creator){
             throw new Error('No Creator Found')

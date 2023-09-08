@@ -4,6 +4,8 @@ type User{
     name:String!
     password:String
     bio:String
+    status:String
+    posts:Post
     imageUrl:String
     isAdmin:Boolean
     createdAt:String
@@ -15,6 +17,7 @@ type User{
 
 type AuthData{
     token:String!
+    refreshToken:String
     userId:String!
 }
 
@@ -36,7 +39,7 @@ input UserInputData{
 extend type Query{
 login(email:String!, password:String!): AuthData!
 viewUser(userID:ID!):User!
-getUserIdFromToken(token:String!):String!
+getUserById(userId:ID!):User
 }
 
 extend type Mutation{

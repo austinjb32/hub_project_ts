@@ -11,7 +11,7 @@ const users_model_1 = tslib_1.__importDefault(require("../modules/users/users.mo
 const users_datasource_1 = tslib_1.__importDefault(require("./users/users.datasource"));
 const posts_model_1 = tslib_1.__importDefault(require("./posts/posts.model"));
 const posts_datasource_1 = tslib_1.__importDefault(require("./posts/posts.datasource"));
-const resolverCompostion_1 = require("../middleware/resolverCompostion");
+const resolverCompostion_1 = require("../middleware/Composition/resolverCompostion");
 const typeDefs = (0, merge_1.mergeTypeDefs)((0, load_files_1.loadFilesSync)(path_1.default.resolve(__dirname + "/**/*.graphql"), {
     extensions: ["graphql"],
 }));

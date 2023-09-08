@@ -8,7 +8,7 @@ exports.default = {
         viewPost: async (_, args, context) => {
             // Call the getUserById method of the UserDataSource
             return context.dataSource.postModelDataSource.viewPost(args.postID);
-        },
+        }
     },
     Mutation: {
         createPost: async (_, args, context) => {
@@ -33,7 +33,6 @@ exports.default = {
         },
         isLiked: async (parent, args, context) => {
             // You can now use userId in your resolver logic to fetch data
-            console.log("Context:", context);
             const userPost = await like_1.default.findOne({
                 $and: [{ user: String(context.userId) }, { typeID: parent._id }, { type: 'Post' }]
             });

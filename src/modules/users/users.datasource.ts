@@ -4,6 +4,8 @@ import { AuthData, User } from "../../../__generated__/resolvers-types";
 import bcrypt from "bcrypt"; // Import your types here
 import jwt from "jsonwebtoken";
 import { Request } from "express";
+import { loginValidation, userCreationValidation } from "../../middleware/validation";
+import { error } from "console";
 
 
 
@@ -23,18 +25,32 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
     };
   }
 
-  async login({email,password}:User,context:AuthData) {
+  async getUserById(userId: string) {
+    const user = await this.model.findById(userId).lean().exec();
+    if (!user) {
+      return null;
+    }
+ 
+    return {
+      ...user,
+      _id:user._id.toString(),
+      createdAt: user.createdAt.toISOString(),
+      updatedAt: user.updatedAt.toISOString(),
+      isAdmin:user.isAdmin,
+    };
+  }
+
+  async login({email,password}:any,context:AuthData) {
     const user = await this.model.findOne({ email: email });
     if (!user) {
       const error = new Error("User already exists");
       throw error;
     }
-    if (
-      email == null ||
-      password == null
-    ) {
-      const error = new Error("No Input received");
-      throw error;
+    
+    const validLogin= loginValidation({email,password})
+
+    if(validLogin.error){
+      throw new Error(`${validLogin.error.name}${validLogin.error.message}`);
     }
 
     const hashedPassword = bcrypt.compareSync(
@@ -55,23 +71,44 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
       { expiresIn: "1h" }
     );
 
-    context.token=token
+    let refreshToken;
 
-    return { token: token, userId: user._id.toString() };
+    if(user.isAdmin){
+      refreshToken = jwt.sign(
+        {
+          email: user.email,
+          userId: user._id.toString(),
+        },
+        "somesupersecretsecret",
+        { expiresIn: "30d" }
+        
+      );
+      context.refreshToken=refreshToken
+      
+
+    console.log(refreshToken);
+    }
+
+   
+
+    context.token=token
+    
+
+    return { token: token, userId: user._id.toString(),refreshToken:refreshToken };
   }
 
-  async createUser(userInput: User): Promise<User> {
+  async createUser(userInput:any): Promise<User> {
+  
+    const validCreation= userCreationValidation(userInput)
+
+
+    if(validCreation.error){
+      throw new Error(`${validCreation.error.name}${validCreation.error.message}`);
+    }
+
     const user = await this.model.findOne({ email: userInput.email });
     if (user) {
       const error = new Error("User already exists");
-      throw error;
-    }
-    if (
-      userInput.email == null ||
-      userInput.name == null ||
-      userInput.password == null
-    ) {
-      const error = new Error("No Input received");
       throw error;
     }
 

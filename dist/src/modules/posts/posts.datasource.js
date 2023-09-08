@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
+const validation_1 = require("../../middleware/validation");
 class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewPost(args) {
         if (!args) {
@@ -21,11 +22,11 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         return formattedPost;
     }
     async createPost(postInput, context) {
-        if (!postInput) {
-            throw new Error('No input');
+        const postCreateValidation = (0, validation_1.postCreationValidation)(postInput);
+        if (postCreateValidation.error) {
+            throw new Error(`${postCreateValidation.error.name}${postCreateValidation.error.message}`);
         }
         const creator = await user_1.default.findById(context.userId);
-        console.log(context, "hello");
         if (!creator) {
             throw new Error('No Creator Found');
         }

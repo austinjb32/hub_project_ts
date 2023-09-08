@@ -26,6 +26,7 @@ export type Activity = {
 
 export type AuthData = {
   __typename?: 'AuthData';
+  refreshToken?: Maybe<Scalars['String']['output']>;
   token: Scalars['String']['output'];
   userId: Scalars['String']['output'];
 };
@@ -63,15 +64,15 @@ export type Post = {
 
 export type Query = {
   __typename?: 'Query';
-  getUserIdFromToken: Scalars['String']['output'];
+  getUserById?: Maybe<User>;
   login: AuthData;
   viewPost?: Maybe<Post>;
   viewUser: User;
 };
 
 
-export type QueryGetUserIdFromTokenArgs = {
-  token: Scalars['String']['input'];
+export type QueryGetUserByIdArgs = {
+  userId: Scalars['ID']['input'];
 };
 
 
@@ -103,6 +104,8 @@ export type User = {
   lastActivity?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   password?: Maybe<Scalars['String']['output']>;
+  posts?: Maybe<Post>;
+  status?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['String']['output']>;
 };
 
@@ -228,6 +231,7 @@ export type ActivityResolvers<ContextType = userContext, ParentType extends Reso
 }>;
 
 export type AuthDataResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['AuthData'] = ResolversParentTypes['AuthData']> = ResolversObject<{
+  refreshToken?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   userId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -254,7 +258,7 @@ export type PostResolvers<ContextType = userContext, ParentType extends Resolver
 }>;
 
 export type QueryResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
-  getUserIdFromToken?: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<QueryGetUserIdFromTokenArgs, 'token'>>;
+  getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'userId'>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'email' | 'password'>>;
   viewPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryViewPostArgs, 'postID'>>;
   viewUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryViewUserArgs, 'userID'>>;
@@ -272,6 +276,8 @@ export type UserResolvers<ContextType = userContext, ParentType extends Resolver
   lastActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   password?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  posts?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType>;
+  status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
