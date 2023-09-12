@@ -1,26 +1,16 @@
 import DataLoader from 'dataloader';
-import { IPostDocument, IPostSchemaDocument } from './posts.model';
-import PostModel from './posts.model';
-import { Post } from '../../../__generated__/resolvers-types';
+import postModel from './posts.model';
 
-export const postLoader = new DataLoader<string, IPostDocument[]>(async (ids) => {
-    // Find all posts with the creator field matching the provided user IDs
-    const posts = await PostModel.find({ creator: { $in: ids } });
-  
-    // Create a map of user IDs to an array of their posts
-    const userPostsMap: Record<string, IPostDocument[]> = {};
-  
-    // Initialize the map with empty arrays for each user ID
-    ids.forEach((id) => {
-      userPostsMap[id] = [];
-    });
-  
-    // Group the posts by their creator's user ID
-    posts.forEach((post) => {
-      userPostsMap[post.creator.toString()].push(post);
-    });
-  
-    // Map the IDs to arrays of user posts, maintaining the order
-    return ids.map((id) => userPostsMap[id]);
-  });
-  
+// Define a function to fetch posts by an array of user IDs
+const getPostsByUserId = async (userId: unknown) => {
+  const posts = await postModel.find({ creator: userId });
+  return posts;
+};
+
+export const getPostLoader = () => new DataLoader(async (userIds) => {
+  // Since you have only one user, you can fetch posts for that user
+  const userPosts = await getPostsByUserId(userIds[0]);
+
+  // Return the posts directly as an array
+  return [userPosts];
+});

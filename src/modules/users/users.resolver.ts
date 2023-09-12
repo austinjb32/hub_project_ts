@@ -5,9 +5,8 @@ import jwt from 'jsonwebtoken';
 import Relationship from "../../models/relationship";
 import Activity from "../../models/activity";
 import UserStatus from "../../models/userStatus";
-import { userLoader } from "./users.dataLoader";
 import { IPostDocument } from "../posts/posts.model";
-import { postLoader } from "../posts/posts.dataLoaders";
+import { getPostLoader } from "../posts/posts.dataLoaders";
 
 
 export default {
@@ -15,7 +14,8 @@ export default {
     viewUser: async (_, args, context) => {
       // Access args.userID
       // Call the getUserById method of the UserDataSource
-      return context.dataSource.userModelDataSource.viewUser(args.userID);
+     
+      return context.dataSource.userModelDataSource.viewUser(args.userID,context as any);
       
     },
     login: async (_, args, context) => {
@@ -71,16 +71,24 @@ export default {
 
       return lateststatus?.status;
     },
-  //   posts: async(parent:User, args, context)=>{
-  //     try{
-  //   const postLoading= await postLoader.load(parent!._id as string);
+    posts: async(parent:User, args, context)=>{
+      try{
+    
+        const posts= await context.postLoaders.load(parent._id!);
+        const transformedPosts = posts.map((post:any) => ({
+          ...post._doc,
+          _id: post._id.toString(),
+          shareCount:Number(post.shareCount),
+          creator: parent,
+        })) as Post[];
+  
+        return transformedPosts;
 
-  //   return postLoading
-  //     }
-  //   catch(e){
-  //       // Handle any errors appropriately
-  //       throw new Error('An error occurred while fetching posts.');
-  //   }
-  // }
+      }catch(err){
+        throw new Error(err as string);
+      }
+        
+        
+  }
   },
 } as Resolvers;

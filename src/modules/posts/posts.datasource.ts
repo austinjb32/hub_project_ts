@@ -1,69 +1,102 @@
-import { IPostSchemaDocument,IPostSchemaModel } from "./posts.model";
+import { IPostSchemaDocument, IPostSchemaModel } from "./posts.model";
 import { MongoDataSource } from "apollo-datasource-mongodb";
 import { Post } from "../../../__generated__/resolvers-types";
 import post from "../../models/post";
 import user from "../../models/user";
 import { userContext } from "../../libs";
 import { postCreationValidation } from "../../middleware/validation";
+import Redis from "ioredis";
 
-export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>{
-    async viewPost(args:string){
-        if(!args){
-            throw new Error('No input');
-        }   
-
-        const post= await this.model.findById(args);
-
-        if(!post){
-            throw new Error ('Post not Found');
-        }
-
-        
-
-
-
-        const formattedPost:Post={
-            ...post.toObject(),
-            _id:post._id.toString(),
-            createdAt:post.createdAt.toString(),
-            updatedAt:post.updatedAt.toString(),
-        }
-
-        return formattedPost  
+export default class PostDataSource extends MongoDataSource<IPostSchemaDocument> {
+  async viewPost(args: string) {
+    if (!args) {
+      throw new Error("No input");
     }
-    async createPost(postInput:Post,context:userContext){
-        
-        const postCreateValidation= postCreationValidation(postInput);
 
-        if(postCreateValidation.error){
-            throw new Error(`${postCreateValidation.error.name}${postCreateValidation.error.message}`);
-          }
-      
+    const redis = new Redis({ port: 8080 });
 
-        const creator = await user.findById(context.userId);
+    // Sample data to be stored in Redis
+    const sampleData = [
+      {
+        id: 1,
+        name: "Austin",
+      },
+      {
+        id: 2,
+        name: "Ameen",
+      },
+      {
+        id: 3,
+        name: "Aravind",
+      },
+    ];
+    let dataStore = await redis.get("mydata").then((res) => {
+      return res;
+    });
 
-        if(!creator){
-            throw new Error('No Creator Found')
-        }
+    // const dataCheck = await redis.hget("id", "id", (err, result) => {
+    //   if (err) {
+    //     console.log(err);
+    //   }
+    //   return result;
+    // });
 
-
-        const newPost= new this.model({
-            title:postInput.title,
-            content:postInput.content,
-            imageUrl:postInput.imageUrl,
-            creator:creator,
-        })
-
-        await newPost.save()
-
-        const formattedPost:Post={
-            ...newPost.toObject(),
-            _id:newPost._id.toString(),
-            createdAt:newPost.createdAt.toString(),
-            updatedAt:newPost.updatedAt.toString(),
-        }
-
-        return formattedPost  
+    // console.log("result:", dataCheck);
+    if (dataStore) {
+      console.log("get:", dataStore);
     }
+
+    if (!dataStore) {
+      dataStore = await redis.set("mydata", JSON.stringify(sampleData));
+      console.log("set:", dataStore);
     }
-    
+
+    const post = await this.model.findById(args);
+
+    if (!post) {
+      throw new Error("Post not Found");
+    }
+
+    const formattedPost: Post = {
+      ...post.toObject(),
+      _id: post._id.toString(),
+      createdAt: post.createdAt.toString(),
+      updatedAt: post.updatedAt.toString(),
+    };
+
+    return formattedPost;
+  }
+  async createPost(postInput: Post, context: userContext) {
+    const postCreateValidation = postCreationValidation(postInput);
+
+    if (postCreateValidation.error) {
+      throw new Error(
+        `${postCreateValidation.error.name}${postCreateValidation.error.message}`
+      );
+    }
+
+    const creator = await user.findById(context.userId);
+
+    if (!creator) {
+      throw new Error("No Creator Found");
+    }
+
+    const newPost = new this.model({
+      title: postInput.title,
+      content: postInput.content,
+      imageUrl: postInput.imageUrl,
+      creator: creator,
+    });
+
+    await newPost.save();
+
+    const formattedPost: Post = {
+      ...newPost.toObject(),
+      _id: newPost._id.toString(),
+      createdAt: newPost.createdAt.toString(),
+      updatedAt: newPost.updatedAt.toString(),
+    };
+
+    return formattedPost;
+  }
+}

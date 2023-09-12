@@ -6,6 +6,8 @@ import { ApolloServer,AuthenticationError,SyntaxError,UserInputError, Validation
 import { Modules } from './src/modules';
 import http from 'http';
 import { error } from "console";
+import { getPostLoader } from "./src/modules/posts/posts.dataLoaders";
+import { getUserLoader } from "./src/modules/users/users.dataLoader";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -36,7 +38,8 @@ const server=new ApolloServer({
     context: async ({req}) => ({ 
       dataSource:Modules.dataSource,
       accessToken:req.headers.authorization,
-      loaders:true
+      userLoaders:getUserLoader(),
+      postLoaders:getPostLoader()
      }),
      formatError: (error) => { // Use error as a parameter
       if (error instanceof UserInputError) { // Check if the error is an instance of UserInputError
@@ -51,8 +54,6 @@ const server=new ApolloServer({
       if (error instanceof SyntaxError) { // Check if the error is an instance of UserInputError
         throw new Error('Syntax Failed'); // Throw a custom error message
       }
-      
-      // Handle other errors here if needed
       return error; // Return the original error if it's not a UserInputError
     },
   });

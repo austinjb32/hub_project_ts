@@ -6,14 +6,15 @@ const bcrypt_1 = tslib_1.__importDefault(require("bcrypt")); // Import your type
 const jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
 const validation_1 = require("../../middleware/validation");
 class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
-    async viewUser(userId) {
-        const user = await this.model.findById(userId).lean().exec();
+    async viewUser(userId, context) {
+        const user = await context.userLoaders.load(userId);
         if (!user) {
             return null;
         }
         return {
-            ...user,
+            ...user._doc,
             _id: user._id.toString(),
+            name: user.name.toString(),
             createdAt: user.createdAt.toISOString(),
             updatedAt: user.updatedAt.toISOString(),
             isAdmin: user.isAdmin,

@@ -1,24 +1,27 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
-import { IUserSchemaDocument, IUserSchemaModel } from "./users.model"; // Import your User model here
+import UserModel, { IUserSchemaDocument, IUserSchemaModel } from "./users.model"; // Import your User model here
 import { AuthData, User } from "../../../__generated__/resolvers-types";
 import bcrypt from "bcrypt"; // Import your types here
 import jwt from "jsonwebtoken";
 import { Request } from "express";
 import { loginValidation, userCreationValidation } from "../../middleware/validation";
 import { error } from "console";
+import { string } from "joi";
 
 
 
 export default class UserDataSource extends MongoDataSource<IUserSchemaDocument> {
-  async viewUser(userId: string) {
-    const user = await this.model.findById(userId).lean().exec();
+  async viewUser(userId: string,context:any) {
+    const user = await context.userLoaders.load(userId);
     if (!user) {
       return null;
     }
+
  
     return {
-      ...user,
+      ...user._doc,
       _id:user._id.toString(),
+      name:user.name.toString(),
       createdAt: user.createdAt.toISOString(),
       updatedAt: user.updatedAt.toISOString(),
       isAdmin:user.isAdmin,

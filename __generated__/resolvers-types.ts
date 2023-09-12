@@ -104,7 +104,7 @@ export type User = {
   lastActivity?: Maybe<Scalars['String']['output']>;
   name: Scalars['String']['output'];
   password?: Maybe<Scalars['String']['output']>;
-  posts?: Maybe<Post>;
+  posts?: Maybe<Array<Maybe<Post>>>;
   status?: Maybe<Scalars['String']['output']>;
   updatedAt?: Maybe<Scalars['String']['output']>;
 };
@@ -276,7 +276,7 @@ export type UserResolvers<ContextType = userContext, ParentType extends Resolver
   lastActivity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   password?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  posts?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType>;
+  posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updatedAt?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

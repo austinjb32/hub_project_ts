@@ -4,14 +4,48 @@ const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
 const validation_1 = require("../../middleware/validation");
+const ioredis_1 = tslib_1.__importDefault(require("ioredis"));
 class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewPost(args) {
         if (!args) {
-            throw new Error('No input');
+            throw new Error("No input");
+        }
+        const redis = new ioredis_1.default({ port: 8080 });
+        // Sample data to be stored in Redis
+        const sampleData = [
+            {
+                id: 1,
+                name: "Austin",
+            },
+            {
+                id: 2,
+                name: "Ameen",
+            },
+            {
+                id: 3,
+                name: "Aravind",
+            },
+        ];
+        let dataStore = await redis.get("mydata").then((res) => {
+            return res;
+        });
+        // const dataCheck = await redis.hget("id", "id", (err, result) => {
+        //   if (err) {
+        //     console.log(err);
+        //   }
+        //   return result;
+        // });
+        // console.log("result:", dataCheck);
+        if (dataStore) {
+            console.log("get:", dataStore);
+        }
+        if (!dataStore) {
+            dataStore = await redis.set("mydata", JSON.stringify(sampleData));
+            console.log("set:", dataStore);
         }
         const post = await this.model.findById(args);
         if (!post) {
-            throw new Error('Post not Found');
+            throw new Error("Post not Found");
         }
         const formattedPost = {
             ...post.toObject(),
@@ -28,7 +62,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         }
         const creator = await user_1.default.findById(context.userId);
         if (!creator) {
-            throw new Error('No Creator Found');
+            throw new Error("No Creator Found");
         }
         const newPost = new this.model({
             title: postInput.title,

@@ -8,8 +8,8 @@ const mongoose_1 = tslib_1.__importDefault(require("mongoose"));
 const apollo_server_express_1 = require("apollo-server-express");
 const modules_1 = require("./src/modules");
 const http_1 = tslib_1.__importDefault(require("http"));
-const users_dataLoader_1 = require("./src/modules/users/users.dataLoader");
 const posts_dataLoaders_1 = require("./src/modules/posts/posts.dataLoaders");
+const users_dataLoader_1 = require("./src/modules/users/users.dataLoader");
 const app = (0, express_1.default)();
 const httpServer = http_1.default.createServer(app);
 app.use(body_parser_1.default.json());
@@ -30,10 +30,8 @@ const server = new apollo_server_express_1.ApolloServer({
     context: async ({ req }) => ({
         dataSource: modules_1.Modules.dataSource,
         accessToken: req.headers.authorization,
-        Loader: {
-            userLoader: users_dataLoader_1.userLoader,
-            postLoader: posts_dataLoaders_1.postLoader
-        }
+        userLoaders: (0, users_dataLoader_1.getUserLoader)(),
+        postLoaders: (0, posts_dataLoaders_1.getPostLoader)()
     }),
     formatError: (error) => {
         if (error instanceof apollo_server_express_1.UserInputError) { // Check if the error is an instance of UserInputError
@@ -48,7 +46,6 @@ const server = new apollo_server_express_1.ApolloServer({
         if (error instanceof apollo_server_express_1.SyntaxError) { // Check if the error is an instance of UserInputError
             throw new Error('Syntax Failed'); // Throw a custom error message
         }
-        // Handle other errors here if needed
         return error; // Return the original error if it's not a UserInputError
     },
 });

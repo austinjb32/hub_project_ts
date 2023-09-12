@@ -9,7 +9,7 @@ exports.default = {
         viewUser: async (_, args, context) => {
             // Access args.userID
             // Call the getUserById method of the UserDataSource
-            return context.dataSource.userModelDataSource.viewUser(args.userID);
+            return context.dataSource.userModelDataSource.viewUser(args.userID, context);
         },
         login: async (_, args, context) => {
             // Access args
@@ -61,7 +61,21 @@ exports.default = {
                 .exec();
             return lateststatus?.status;
         },
-        posts: (_, { postLoader }, parent) => { return postLoader.load(parent._id); }
+        posts: async (parent, args, context) => {
+            try {
+                const posts = await context.postLoaders.load(parent._id);
+                const transformedPosts = posts.map((post) => ({
+                    ...post._doc,
+                    _id: post._id.toString(),
+                    shareCount: Number(post.shareCount),
+                    creator: parent,
+                }));
+                return transformedPosts;
+            }
+            catch (err) {
+                throw new Error(err);
+            }
+        }
     },
 };
 //# sourceMappingURL=users.resolver.js.map

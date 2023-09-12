@@ -4,5 +4,6 @@
         "MONGO_PASSWORD":"123Gmail",
         "MONGO_DB":"main",
         "BCRYPT_CODE":"pseudomeunocode"
-    }
+    },
+    "ext":"js,mjs,json,ts"
 }

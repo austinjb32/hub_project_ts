@@ -1,7 +1,8 @@
 
+import { getPostLoader} from "../modules/posts/posts.dataLoaders";
 import PostDataSource from "../modules/posts/posts.datasource";
 import { IPostSchemaModel } from "../modules/posts/posts.model";
-import { userLoader } from "../modules/users/users.dataLoader";
+import { getUserLoader } from "../modules/users/users.dataLoader";
 import UserDataSource from "../modules/users/users.datasource";
 import { IUserSchemaModel } from "../modules/users/users.model";
 import { GraphQLSchema } from "graphql";
@@ -22,6 +23,8 @@ export type TModelContext = {
   export interface userContext {
     accessToken: string | undefined;
     userId:string| undefined;
+    userLoaders:ReturnType<typeof getUserLoader>;
+    postLoaders:ReturnType<typeof getPostLoader>;
     // me: Nullable<JWTPayload>;
     models: TModelContext;
     dataSource: TDataSourceContext;

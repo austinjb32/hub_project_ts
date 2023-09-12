@@ -1,4 +1,6 @@
 import { Schema, Document, Model,model } from 'mongoose';
+import isEmail from 'validator/lib/isEmail';
+import isAlphanumeric from 'validator/lib/isAlphanumeric';
 
 // Define the User schema
 export interface IUserSchemaDocument extends Document {
@@ -27,10 +29,12 @@ IUserSchemaModel
       required: true,
       unique: true,
       index: true,
+      validate:isEmail,
     },
     password: {
       type: String,
       required: true,
+      select:false
     },
     name: {
       type: String,
