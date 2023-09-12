@@ -6,6 +6,7 @@ import user from "../../models/user";
 import { userContext } from "../../libs";
 import { postCreationValidation } from "../../middleware/validation";
 import Redis from "ioredis";
+import UserModel from "../users/users.model";
 
 export default class PostDataSource extends MongoDataSource<IPostSchemaDocument> {
   async viewPost(args: string) {
@@ -65,6 +66,69 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     };
 
     return formattedPost;
+  }
+
+  async viewPostsbyUserID(args:any){
+    const user= await UserModel.findById(args.userID)
+    if(!user){
+      throw new Error('No User found')
+    }
+    console.log(args)
+
+    const posts= await this.model.find({creator:args.userID})
+    .skip(args.skip||0)
+    .sort({createdAt:(args.filter||0)})
+    .limit(args.limit)
+
+    if(!posts){
+      return "No Posts Available"
+    }
+
+    console.log(posts);
+
+    const formattedPost= posts.map((post:any)=>{
+      return {...post._doc,title:post.title.toString()}
+    })
+
+    return formattedPost
+    
+  }
+  async viewPostsWithSearch(args:any){
+    let pipeline:any[]=[];
+
+    pipeline.push(
+      {
+        $search: {
+          index: "searchPosts",
+          text: {
+            query: `{\"title\":{$eq:\`${args.search}\`}}`,
+            path: {
+              wildcard: "*"
+            }
+          }
+        }
+      })
+
+    pipeline.push(
+      {$sort: {...({updatedDate:args.sort||-1})}},
+      {$skip:args.offset||0},
+      {$limit:args.limit||10}
+    )
+
+
+    const postSearch= await this.model.aggregate(pipeline);
+    if(!postSearch){
+      return "No Posts Available"
+    }
+
+    console.log(postSearch);
+
+    const formattedPost= postSearch.map((post:any)=>{
+      return {...post._doc,title:post.title.toString()}
+    })
+
+    return formattedPost
+    
   }
   async createPost(postInput: Post, context: userContext) {
     const postCreateValidation = postCreationValidation(postInput);

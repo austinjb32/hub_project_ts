@@ -20,6 +20,7 @@ input postInputData{
 
 extend type Query{
     viewPost(postID:ID!):Post
+    viewPostsbyUserID(userID:ID!,search:String,skip:Int,offset:Int,filter:Int,limit:Int):[Post]
 }
 
 

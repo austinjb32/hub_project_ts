@@ -5,6 +5,7 @@ const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
 const validation_1 = require("../../middleware/validation");
 const ioredis_1 = tslib_1.__importDefault(require("ioredis"));
+const users_model_1 = tslib_1.__importDefault(require("../users/users.model"));
 class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewPost(args) {
         if (!args) {
@@ -53,6 +54,49 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             createdAt: post.createdAt.toString(),
             updatedAt: post.updatedAt.toString(),
         };
+        return formattedPost;
+    }
+    async viewPostsbyUserID(args) {
+        const user = await users_model_1.default.findById(args.userID);
+        if (!user) {
+            throw new Error('No User found');
+        }
+        console.log(args);
+        const posts = await this.model.find({ creator: args.userID })
+            .skip(args.skip || 0)
+            .sort({ createdAt: (args.filter || 0) })
+            .limit(args.limit);
+        if (!posts) {
+            return "No Posts Available";
+        }
+        console.log(posts);
+        const formattedPost = posts.map((post) => {
+            return { ...post._doc, title: post.title.toString() };
+        });
+        return formattedPost;
+    }
+    async viewPostsWithSearch(args) {
+        let pipeline = [];
+        pipeline.push({
+            $search: {
+                index: "searchPosts",
+                text: {
+                    query: `{\"title\":{$eq:\`${args.search}\`}}`,
+                    path: {
+                        wildcard: "*"
+                    }
+                }
+            }
+        });
+        pipeline.push({ $sort: { ...({ updatedDate: args.sort || -1 }) } }, { $skip: args.offset || 0 }, { $limit: args.limit || 10 });
+        const postSearch = await this.model.aggregate(pipeline);
+        if (!postSearch) {
+            return "No Posts Available";
+        }
+        console.log(postSearch);
+        const formattedPost = postSearch.map((post) => {
+            return { ...post._doc, title: post.title.toString() };
+        });
         return formattedPost;
     }
     async createPost(postInput, context) {

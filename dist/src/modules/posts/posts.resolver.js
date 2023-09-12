@@ -8,6 +8,14 @@ exports.default = {
         viewPost: async (_, args, context) => {
             // Call the getUserById method of the UserDataSource
             return context.dataSource.postModelDataSource.viewPost(args.postID);
+        },
+        viewPostsbyUserID: async (_, args, context) => {
+            if (args.search) {
+                return context.dataSource.postModelDataSource.viewPostsWithSearch(args);
+            }
+            else {
+                return context.dataSource.postModelDataSource.viewPostsbyUserID(args);
+            }
         }
     },
     Mutation: {

@@ -9,6 +9,13 @@ export default {
         // Call the getUserById method of the UserDataSource
         return context.dataSource.postModelDataSource.viewPost(args.postID)
 
+    },
+    viewPostsbyUserID: async (_:any,args:any,context:any)=>{
+      if(args.search){
+        return context.dataSource.postModelDataSource.viewPostsWithSearch(args)
+      }else{
+      return context.dataSource.postModelDataSource.viewPostsbyUserID(args)
+      }
     }
    
     },

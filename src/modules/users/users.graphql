@@ -5,7 +5,13 @@ type User{
     password:String
     bio:String
     status:String
-    posts:[Post]
+    posts(
+    limit:Int
+    offset:Int
+    search:String
+    sort:String
+    filter:String
+    ):[Post]
     imageUrl:String
     isAdmin:Boolean
     createdAt:String
