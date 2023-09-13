@@ -11,4 +11,3 @@ generates:
       contextType: "../src/libs/index#userContext"
       # This section defines the mappers that will be used to map
 # between GraphQL types and your application's data models.
-  

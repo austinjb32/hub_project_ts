@@ -1,12 +1,14 @@
 import { Post, Resolvers, User } from "../../../__generated__/resolvers-types";
+import { userContext } from "../../libs";
 import Comment from "../../models/comment";
 import Like from "../../models/like";
 
 export default {
   Query: {
-    viewPost: async (args:any, context:any) => {
+    viewPost: async (_:any,args:any, context:userContext) => {
       // Call the getUserById method of the UserDataSource
-      return context.dataSource.postModelDataSource.viewPost(args.postID);
+      
+      return context.dataSource.postModelDataSource.viewPost(args.postID,context);
     },
     viewPostsbyUserID: async (_: any, args: any, context: any) => {
       if (args.search) {

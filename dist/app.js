@@ -10,6 +10,7 @@ const modules_1 = require("./src/modules");
 const http_1 = tslib_1.__importDefault(require("http"));
 const posts_dataLoaders_1 = require("./src/modules/posts/posts.dataLoaders");
 const users_dataLoader_1 = require("./src/modules/users/users.dataLoader");
+const redis_1 = require("redis");
 const app = (0, express_1.default)();
 const httpServer = http_1.default.createServer(app);
 app.use(body_parser_1.default.json());
@@ -23,6 +24,9 @@ app.use((req, res, next) => {
     next();
 });
 app.use(errorResponse_1.default);
+function redisClient() {
+    return (0, redis_1.createClient)({ url: "redis://localhost:8080/" });
+}
 const server = new apollo_server_express_1.ApolloServer({
     schema: modules_1.Modules.schemas,
     csrfPrevention: true,
@@ -31,7 +35,8 @@ const server = new apollo_server_express_1.ApolloServer({
         dataSource: modules_1.Modules.dataSource,
         accessToken: req.headers.authorization,
         userLoaders: (0, users_dataLoader_1.getUserLoader)(),
-        postLoaders: (0, posts_dataLoaders_1.getPostLoader)()
+        postLoaders: (0, posts_dataLoaders_1.getPostLoader)(),
+        redisClient: redisClient(),
     }),
     formatError: (error) => {
         if (error instanceof apollo_server_express_1.UserInputError) { // Check if the error is an instance of UserInputError

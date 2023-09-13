@@ -8,6 +8,7 @@ import http from 'http';
 import { error } from "console";
 import { getPostLoader } from "./src/modules/posts/posts.dataLoaders";
 import { getUserLoader } from "./src/modules/users/users.dataLoader";
+import { createClient } from "redis";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -30,6 +31,11 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 
+function redisClient(){
+  return createClient({url:"redis://localhost:8080/"});
+}
+
+
 
 const server=new ApolloServer({
     schema:Modules.schemas,
@@ -39,7 +45,8 @@ const server=new ApolloServer({
       dataSource:Modules.dataSource,
       accessToken:req.headers.authorization,
       userLoaders:getUserLoader(),
-      postLoaders:getPostLoader()
+      postLoaders:getPostLoader(),
+      redisClient:redisClient(),
      }),
      formatError: (error) => { // Use error as a parameter
       if (error instanceof UserInputError) { // Check if the error is an instance of UserInputError

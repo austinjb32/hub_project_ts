@@ -25,6 +25,7 @@ export type TModelContext = {
     userId:string| undefined;
     userLoaders:ReturnType<typeof getUserLoader>;
     postLoaders:ReturnType<typeof getPostLoader>;
+    redisClient:any;
     // me: Nullable<JWTPayload>;
     models: TModelContext;
     dataSource: TDataSourceContext;

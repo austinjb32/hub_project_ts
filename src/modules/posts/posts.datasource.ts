@@ -8,62 +8,40 @@ import { postCreationValidation,postUpdationValidation } from "../../middleware/
 import Redis from "ioredis";
 import UserModel from "../users/users.model";
 import _ from 'lodash';
+import { createClient } from 'redis';
+
+
+
 
 export default class PostDataSource extends MongoDataSource<IPostSchemaDocument> {
-  async viewPost(args: string) {
+  async viewPost(args: string,context:userContext) {
     if (!args) {
       throw new Error("No input");
     }
 
-    const redis = new Redis({ port: 8080 });
+    await context.redisClient.connect();
 
-    // Sample data to be stored in Redis
-    const sampleData = [
-      {
-        id: 1,
-        name: "Austin",
-      },
-      {
-        id: 2,
-        name: "Ameen",
-      },
-      {
-        id: 3,
-        name: "Aravind",
-      },
-    ];
-    let dataStore = await redis.get("mydata").then((res) => {
-      return res;
-    });
+    let dataStore= await context.redisClient.HGET('post',`${args}`)
 
-    // const dataCheck = await redis.hget("id", "id", (err, result) => {
-    //   if (err) {
-    //     console.log(err);
-    //   }
-    //   return result;
-    // });
+    if(!dataStore){
+      const post = await this.model.findById(args);
 
-    // console.log("result:", dataCheck);
-    if (dataStore) {
-      console.log("get:", dataStore);
+      if (!post) {
+        throw new Error("Post not Found");
+    }
+    let dataStore= await context.redisClient.HSET('post',`${args}`,JSON.stringify(post));
     }
 
-    if (!dataStore) {
-      dataStore = await redis.set("mydata", JSON.stringify(sampleData));
-      console.log("set:", dataStore);
-    }
+    let post=JSON.parse(dataStore!);
+    
+    context.redisClient.disconnect();
 
-    const post = await this.model.findById(args);
 
-    if (!post) {
-      throw new Error("Post not Found");
-    }
-
-    const formattedPost: Post = {
-      ...post.toObject(),
-      _id: post._id.toString(),
-      createdAt: post.createdAt.toString(),
-      updatedAt: post.updatedAt.toString(),
+    const formattedPost:Post = {
+      ...post,
+      _id: post._id,
+      createdAt: post.createdAt,
+      updatedAt: post.updatedAt,
     };
 
     return formattedPost;
@@ -91,6 +69,7 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     return formattedPost
     
   }
+
   async viewPostsWithSearch(args:any){
     let pipeline:any[]=[];
 
@@ -137,6 +116,14 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
       );
     }
   
+    async function redisUpdateOperations(){
+      await context.redisClient.connect();
+      await context.redisClient.HDEL('post', `${userInput.id}`)
+      await context.redisClient.HSET('post',`${userInput}`,JSON.stringify(post));
+      context.redisClient.disconnect();
+    }
+
+
     const foundUser = await user.findById(context.userId);
   
     const post = await this.model.findById(userInput.id);
@@ -159,6 +146,8 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     // Update and save the post
     Object.assign(post!, updatedPost);
     await post!.save();
+
+    await redisUpdateOperations();
   
     return { ...updatedPost.toObject(), _id: updatedPost._id.toString() };
   }
@@ -187,13 +176,15 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     });
 
     await newPost.save();
-
     const formattedPost: Post = {
       ...newPost.toObject(),
       _id: newPost._id.toString(),
       createdAt: newPost.createdAt.toString(),
       updatedAt: newPost.updatedAt.toString(),
     };
+    
+    await context.redisClient.connect();
+    await context.redisClient.HSET('post',`${formattedPost._id}`,JSON.stringify(formattedPost));
 
     return formattedPost;
   }

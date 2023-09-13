@@ -4,56 +4,29 @@ const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
 const validation_1 = require("../../middleware/validation");
-const ioredis_1 = tslib_1.__importDefault(require("ioredis"));
 const users_model_1 = tslib_1.__importDefault(require("../users/users.model"));
 const lodash_1 = tslib_1.__importDefault(require("lodash"));
 class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
-    async viewPost(args) {
+    async viewPost(args, context) {
         if (!args) {
             throw new Error("No input");
         }
-        const redis = new ioredis_1.default({ port: 8080 });
-        // Sample data to be stored in Redis
-        const sampleData = [
-            {
-                id: 1,
-                name: "Austin",
-            },
-            {
-                id: 2,
-                name: "Ameen",
-            },
-            {
-                id: 3,
-                name: "Aravind",
-            },
-        ];
-        let dataStore = await redis.get("mydata").then((res) => {
-            return res;
-        });
-        // const dataCheck = await redis.hget("id", "id", (err, result) => {
-        //   if (err) {
-        //     console.log(err);
-        //   }
-        //   return result;
-        // });
-        // console.log("result:", dataCheck);
-        if (dataStore) {
-            console.log("get:", dataStore);
-        }
+        await context.redisClient.connect();
+        let dataStore = await context.redisClient.HGET('post', `${args}`);
         if (!dataStore) {
-            dataStore = await redis.set("mydata", JSON.stringify(sampleData));
-            console.log("set:", dataStore);
+            const post = await this.model.findById(args);
+            if (!post) {
+                throw new Error("Post not Found");
+            }
+            let dataStore = await context.redisClient.HSET('post', `${args}`, JSON.stringify(post));
         }
-        const post = await this.model.findById(args);
-        if (!post) {
-            throw new Error("Post not Found");
-        }
+        let post = JSON.parse(dataStore);
+        context.redisClient.disconnect();
         const formattedPost = {
-            ...post.toObject(),
-            _id: post._id.toString(),
-            createdAt: post.createdAt.toString(),
-            updatedAt: post.updatedAt.toString(),
+            ...post,
+            _id: post._id,
+            createdAt: post.createdAt,
+            updatedAt: post.updatedAt,
         };
         return formattedPost;
     }
@@ -103,6 +76,12 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         if (postUpdateValidation.error) {
             throw new Error(`${postUpdateValidation.error.name},${postUpdateValidation.error.message}`);
         }
+        async function redisUpdateOperations() {
+            await context.redisClient.connect();
+            await context.redisClient.HDEL('post', `${userInput.id}`);
+            await context.redisClient.HSET('post', `${userInput}`, JSON.stringify(post));
+            context.redisClient.disconnect();
+        }
         const foundUser = await user_1.default.findById(context.userId);
         const post = await this.model.findById(userInput.id);
         // Check if the user is authorized to make the change
@@ -120,6 +99,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         // Update and save the post
         Object.assign(post, updatedPost);
         await post.save();
+        await redisUpdateOperations();
         return { ...updatedPost.toObject(), _id: updatedPost._id.toString() };
     }
     async createPost(postInput, context) {
@@ -144,6 +124,8 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             createdAt: newPost.createdAt.toString(),
             updatedAt: newPost.updatedAt.toString(),
         };
+        await context.redisClient.connect();
+        await context.redisClient.HSET('post', `${formattedPost._id}`, JSON.stringify(formattedPost));
         return formattedPost;
     }
 }

@@ -5,9 +5,9 @@ const comment_1 = tslib_1.__importDefault(require("../../models/comment"));
 const like_1 = tslib_1.__importDefault(require("../../models/like"));
 exports.default = {
     Query: {
-        viewPost: async (args, context) => {
+        viewPost: async (_, args, context) => {
             // Call the getUserById method of the UserDataSource
-            return context.dataSource.postModelDataSource.viewPost(args.postID);
+            return context.dataSource.postModelDataSource.viewPost(args.postID, context);
         },
         viewPostsbyUserID: async (_, args, context) => {
             if (args.search) {
