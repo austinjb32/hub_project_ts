@@ -18,6 +18,13 @@ input postInputData{
     imageUrl:String
     }
 
+input postUpdateData{
+    id:String!
+    title:String!
+    content:String!
+    imageUrl:String
+    }
+
 extend type Query{
     viewPost(postID:ID!):Post
     viewPostsbyUserID(userID:ID!,search:String,skip:Int,offset:Int,filter:Int,limit:Int):[Post]
@@ -26,4 +33,5 @@ extend type Query{
 
 extend type Mutation{
     createPost(postInput:postInputData!):Post!
+    updatePost(userInput:postUpdateData!):Post!
 }

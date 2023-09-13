@@ -4,9 +4,10 @@ import { Post } from "../../../__generated__/resolvers-types";
 import post from "../../models/post";
 import user from "../../models/user";
 import { userContext } from "../../libs";
-import { postCreationValidation } from "../../middleware/validation";
+import { postCreationValidation,postUpdationValidation } from "../../middleware/validation";
 import Redis from "ioredis";
 import UserModel from "../users/users.model";
+import _ from 'lodash';
 
 export default class PostDataSource extends MongoDataSource<IPostSchemaDocument> {
   async viewPost(args: string) {
@@ -73,7 +74,6 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     if(!user){
       throw new Error('No User found')
     }
-    console.log(args)
 
     const posts= await this.model.find({creator:args.userID})
     .skip(args.skip||0)
@@ -83,8 +83,6 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     if(!posts){
       return "No Posts Available"
     }
-
-    console.log(posts);
 
     const formattedPost= posts.map((post:any)=>{
       return {...post._doc,title:post.title.toString()}
@@ -100,10 +98,11 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
       {
         $search: {
           index: "searchPosts",
-          text: {
-            query: `{\"title\":{$eq:\`${args.search}\`}}`,
-            path: {
-              wildcard: "*"
+          "text":{
+            "query":args.search,
+            "path":"title",
+            "fuzzy":{
+              "maxEdits":2
             }
           }
         }
@@ -112,7 +111,8 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     pipeline.push(
       {$sort: {...({updatedDate:args.sort||-1})}},
       {$skip:args.offset||0},
-      {$limit:args.limit||10}
+      {$limit:args.limit||10},
+      {$project:{"title":1,content:1}}
     )
 
 
@@ -121,8 +121,6 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
       return "No Posts Available"
     }
 
-    console.log(postSearch);
-
     const formattedPost= postSearch.map((post:any)=>{
       return {...post._doc,title:post.title.toString()}
     })
@@ -130,6 +128,42 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     return formattedPost
     
   }
+
+  async updatePost(userInput: any, context: userContext) {
+    const postUpdateValidation = postUpdationValidation(userInput);
+    if (postUpdateValidation.error) {
+      throw new Error(
+        `${postUpdateValidation.error.name},${postUpdateValidation.error.message}`
+      );
+    }
+  
+    const foundUser = await user.findById(context.userId);
+  
+    const post = await this.model.findById(userInput.id);
+  
+    // Check if the user is authorized to make the change
+    if (foundUser!._id.toString() !== post!.creator.toString()) {
+      throw new Error("You're not Authorized to make this Change");
+    }
+  
+    // Create an object with the fields to be updated
+    const editPost = {
+      title: userInput.title.toLowerCase().trim(),
+      content: userInput.content.toLowerCase().trim(),
+      imageUrl: userInput.imageUrl.trim(),
+    };
+  
+    // Use lodash to merge the changes into the post
+    const updatedPost = _.merge(post, editPost);
+  
+    // Update and save the post
+    Object.assign(post!, updatedPost);
+    await post!.save();
+  
+    return { ...updatedPost.toObject(), _id: updatedPost._id.toString() };
+  }
+  
+
   async createPost(postInput: Post, context: userContext) {
     const postCreateValidation = postCreationValidation(postInput);
 

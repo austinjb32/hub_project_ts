@@ -18,7 +18,8 @@ const postResolversComposition = {
         viewPost: [(0, auth_1.isAuthenticated)()],
     },
     Mutation: {
-        createPost: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()]
+        createPost: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
+        updatePost: [(0, auth_1.isAuthenticated)()]
     }
 };
 // Compose your resolvers

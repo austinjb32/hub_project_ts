@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.postCreationValidation = exports.userCreationValidation = exports.loginValidation = void 0;
+exports.postUpdationValidation = exports.postCreationValidation = exports.userCreationValidation = exports.loginValidation = void 0;
 const tslib_1 = require("tslib");
 const joi_1 = tslib_1.__importDefault(require("joi"));
 const loginValidation = (login) => {
@@ -30,4 +30,14 @@ const postCreationValidation = (post) => {
     return postCreateSchema.validate(post);
 };
 exports.postCreationValidation = postCreationValidation;
+const postUpdationValidation = (postEdit) => {
+    const postUpdateSchema = joi_1.default.object({
+        id: joi_1.default.string().required(),
+        title: joi_1.default.string().min(3).max(30).required(),
+        content: joi_1.default.string().min(8).max(30).required(),
+        imageUrl: joi_1.default.string().min(3)
+    });
+    return postUpdateSchema.validate(postEdit);
+};
+exports.postUpdationValidation = postUpdationValidation;
 //# sourceMappingURL=validation.js.map

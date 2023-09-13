@@ -24,7 +24,8 @@ const postResolversComposition: ResolversComposerMapping<Resolvers> = {
       
     },
     Mutation:{
-        createPost:[isAuthenticated(),isAdmin()]
+        createPost:[isAuthenticated(),isAdmin()],
+        updatePost:[isAuthenticated()]
     }
   };
 

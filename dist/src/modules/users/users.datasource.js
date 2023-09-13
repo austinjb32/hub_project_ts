@@ -34,7 +34,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         };
     }
     async login({ email, password }, context) {
-        const user = await this.model.findOne({ email: email });
+        const user = await this.model.findOne({ email: email }).exec();
         if (!user) {
             const error = new Error("User already exists");
             throw error;

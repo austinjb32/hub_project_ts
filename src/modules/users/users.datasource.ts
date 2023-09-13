@@ -44,7 +44,7 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
   }
 
   async login({email,password}:any,context:AuthData) {
-    const user = await this.model.findOne({ email: email });
+    const user = await this.model.findOne({ email: email }).exec();
     if (!user) {
       const error = new Error("User already exists");
       throw error;
@@ -60,7 +60,6 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
       password,
       user.password
     );
-
     if (!hashedPassword) {
       throw new Error("Wrong Password");
     }

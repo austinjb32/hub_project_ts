@@ -33,3 +33,14 @@ export const postCreationValidation=(post:Post)=>{
 
   return postCreateSchema.validate(post);
 }
+export const postUpdationValidation=(postEdit:any)=>{
+
+  const postUpdateSchema=Joi.object({
+    id:Joi.string().required(),
+    title:Joi.string().min(3).max(30).required(),
+    content:Joi.string().min(8).max(30).required(),
+    imageUrl:Joi.string().min(3)
+  });
+
+  return postUpdateSchema.validate(postEdit);
+}
