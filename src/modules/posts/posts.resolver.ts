@@ -2,19 +2,26 @@ import { Post, Resolvers, User } from "../../../__generated__/resolvers-types";
 import { userContext } from "../../libs";
 import Comment from "../../models/comment";
 import Like from "../../models/like";
-
 export default {
+  JSON:JSON,
   Query: {
-    viewPost: async (_:any,args:any, context:userContext) => {
+    postById: async (_:any,args:any, context:userContext) => {
       // Call the getUserById method of the UserDataSource
       
-      return context.dataSource.postModelDataSource.viewPost(args.postID,context);
+      return context.dataSource.postModelDataSource.postById(args.postID,context);
     },
-    viewPostsbyUserID: async (_: any, args: any, context: any) => {
+    post: async (_: any, args: any, context: userContext) => {
+      if (args.search) {
+        return context.dataSource.postModelDataSource.viewPostWithSearch(args);
+      } else {
+        return context.dataSource.postModelDataSource.viewPost(args);
+      }
+    },
+    posts: async (_: any, args: any, context: userContext) => {
       if (args.search) {
         return context.dataSource.postModelDataSource.viewPostsWithSearch(args);
       } else {
-        return context.dataSource.postModelDataSource.viewPostsbyUserID(args);
+        return context.dataSource.postModelDataSource.viewPosts(args);
       }
     },
   },
@@ -33,6 +40,14 @@ export default {
         context
       );
     },
+    deletePost: async (_: any, args: any, context: userContext) => {
+      // Call the createUser method of the UserDataSource.
+      return context.dataSource.postModelDataSource.deletePost(
+        args.userInput,
+        context
+      );
+    },
+    
   },
   Post: {
     likesCount: async (parent: Post, args: any, context: any) => {

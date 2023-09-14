@@ -1,13 +1,9 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
-import UserModel, { IUserSchemaDocument, IUserSchemaModel } from "./users.model"; // Import your User model here
+import { IUserSchemaDocument} from "./users.model"; // Import your User model here
 import { AuthData, User } from "../../../__generated__/resolvers-types";
 import bcrypt from "bcrypt"; // Import your types here
 import jwt from "jsonwebtoken";
-import { Request } from "express";
-import { loginValidation, userCreationValidation } from "../../middleware/validation";
-import { error } from "console";
-import { string } from "joi";
-
+import { loginValidation, userCreationValidation } from "../../middleware/Validation/validation";
 
 
 export default class UserDataSource extends MongoDataSource<IUserSchemaDocument> {
@@ -99,7 +95,7 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
     return { token: token, userId: user._id.toString(),refreshToken:refreshToken };
   }
 
-  async createUser(userInput:any): Promise<User> {
+  async createUser(userInput:any,context:any): Promise<User> {
   
     const validCreation= userCreationValidation(userInput)
 
@@ -122,6 +118,8 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
     });
 
     await newUser.save();
+
+    let dataStore= await context.redisClient.HSET('post',`${userInput}`,JSON.stringify(newUser));
 
     return {
       ...newUser.toObject(),

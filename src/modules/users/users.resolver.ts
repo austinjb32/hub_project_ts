@@ -1,12 +1,7 @@
-import { AuthData, Post, Resolvers, User } from "../../../__generated__/resolvers-types";
-import { Request } from "express";
-import { composeResolvers } from "@graphql-tools/resolvers-composition";
-import jwt from 'jsonwebtoken';
+import { Post, Resolvers, User } from "../../../__generated__/resolvers-types";
 import Relationship from "../../models/relationship";
 import Activity from "../../models/activity";
 import UserStatus from "../../models/userStatus";
-import { IPostDocument } from "../posts/posts.model";
-import { getPostLoader } from "../posts/posts.dataLoaders";
 
 
 export default {
@@ -33,7 +28,7 @@ export default {
       // Access args.userInput
       const userInput = args.userInput;
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.userModelDataSource.createUser(userInput);
+      return context.dataSource.userModelDataSource.createUser(userInput,context);
     },
   },
   User: {

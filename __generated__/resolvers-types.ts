@@ -1,4 +1,4 @@
-import { GraphQLResolveInfo } from 'graphql';
+import { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import { userContext } from '../src/libs/index';
 export type Maybe<T> = T | null;
 export type InputMaybe<T> = Maybe<T>;
@@ -15,6 +15,7 @@ export type Scalars = {
   Boolean: { input: boolean; output: boolean; }
   Int: { input: number; output: number; }
   Float: { input: number; output: number; }
+  JSON: { input: any; output: any; }
 };
 
 export type Activity = {
@@ -35,6 +36,7 @@ export type Mutation = {
   __typename?: 'Mutation';
   createPost: Post;
   createUser: User;
+  deletePost?: Maybe<Scalars['JSON']['output']>;
   updatePost: Post;
 };
 
@@ -46,6 +48,11 @@ export type MutationCreatePostArgs = {
 
 export type MutationCreateUserArgs = {
   userInput: UserInputData;
+};
+
+
+export type MutationDeletePostArgs = {
+  postID: Scalars['ID']['input'];
 };
 
 
@@ -72,6 +79,9 @@ export type Query = {
   __typename?: 'Query';
   getUserById?: Maybe<User>;
   login: AuthData;
+  post?: Maybe<Post>;
+  postById?: Maybe<Post>;
+  posts?: Maybe<Array<Maybe<Post>>>;
   viewPost?: Maybe<Post>;
   viewPostsbyUserID?: Maybe<Array<Maybe<Post>>>;
   viewUser: User;
@@ -89,17 +99,41 @@ export type QueryLoginArgs = {
 };
 
 
+export type QueryPostArgs = {
+  filter?: InputMaybe<Scalars['JSON']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sort?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+
+export type QueryPostByIdArgs = {
+  postID: Scalars['ID']['input'];
+};
+
+
+export type QueryPostsArgs = {
+  filter?: InputMaybe<Scalars['JSON']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sort?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+
 export type QueryViewPostArgs = {
   postID: Scalars['ID']['input'];
 };
 
 
 export type QueryViewPostsbyUserIdArgs = {
-  filter?: InputMaybe<Scalars['Int']['input']>;
+  filter?: InputMaybe<Scalars['JSON']['input']>;
   limit?: InputMaybe<Scalars['Int']['input']>;
   offset?: InputMaybe<Scalars['Int']['input']>;
   search?: InputMaybe<Scalars['String']['input']>;
   skip?: InputMaybe<Scalars['Int']['input']>;
+  sort?: InputMaybe<Scalars['JSON']['input']>;
   userID: Scalars['ID']['input'];
 };
 
@@ -231,6 +265,7 @@ export type ResolversTypes = ResolversObject<{
   Boolean: ResolverTypeWrapper<Scalars['Boolean']['output']>;
   ID: ResolverTypeWrapper<Scalars['ID']['output']>;
   Int: ResolverTypeWrapper<Scalars['Int']['output']>;
+  JSON: ResolverTypeWrapper<Scalars['JSON']['output']>;
   Mutation: ResolverTypeWrapper<{}>;
   Post: ResolverTypeWrapper<Post>;
   Query: ResolverTypeWrapper<{}>;
@@ -248,6 +283,7 @@ export type ResolversParentTypes = ResolversObject<{
   Boolean: Scalars['Boolean']['output'];
   ID: Scalars['ID']['output'];
   Int: Scalars['Int']['output'];
+  JSON: Scalars['JSON']['output'];
   Mutation: {};
   Post: Post;
   Query: {};
@@ -272,9 +308,14 @@ export type AuthDataResolvers<ContextType = userContext, ParentType extends Reso
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['JSON'], any> {
+  name: 'JSON';
+}
+
 export type MutationResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'postInput'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationCreateUserArgs, 'userInput'>>;
+  deletePost?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'postID'>>;
   updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'userInput'>>;
 }>;
 
@@ -296,6 +337,9 @@ export type PostResolvers<ContextType = userContext, ParentType extends Resolver
 export type QueryResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   getUserById?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<QueryGetUserByIdArgs, 'userId'>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'email' | 'password'>>;
+  post?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, Partial<QueryPostArgs>>;
+  postById?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostByIdArgs, 'postID'>>;
+  posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, Partial<QueryPostsArgs>>;
   viewPost?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryViewPostArgs, 'postID'>>;
   viewPostsbyUserID?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, RequireFields<QueryViewPostsbyUserIdArgs, 'userID'>>;
   viewUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryViewUserArgs, 'userID'>>;
@@ -322,6 +366,7 @@ export type UserResolvers<ContextType = userContext, ParentType extends Resolver
 export type Resolvers<ContextType = userContext> = ResolversObject<{
   Activity?: ActivityResolvers<ContextType>;
   AuthData?: AuthDataResolvers<ContextType>;
+  JSON?: GraphQLScalarType;
   Mutation?: MutationResolvers<ContextType>;
   Post?: PostResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;

@@ -25,7 +25,7 @@ exports.default = {
             // Access args.userInput
             const userInput = args.userInput;
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.userModelDataSource.createUser(userInput);
+            return context.dataSource.userModelDataSource.createUser(userInput, context);
         },
     },
     User: {

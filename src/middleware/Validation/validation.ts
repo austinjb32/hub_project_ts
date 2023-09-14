@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Post, User } from '../../__generated__/resolvers-types';
+import { Post, User } from '../../../__generated__/resolvers-types';
 
 export const loginValidation=(login:{email:string,password:string})=>{
 

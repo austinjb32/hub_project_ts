@@ -9,7 +9,10 @@ import { error } from "console";
 import { getPostLoader } from "./src/modules/posts/posts.dataLoaders";
 import { getUserLoader } from "./src/modules/users/users.dataLoader";
 import { createClient } from "redis";
+// import { redisClient } from "./src/middleware/Cache/redisCache";
 
+
+const startServer= async function(){
 const app = express();
 const httpServer = http.createServer(app);
 
@@ -31,10 +34,7 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 
-function redisClient(){
-  return createClient({url:"redis://localhost:8080/"});
-}
-
+const redisClient = await createClient({url:"redis://localhost:8080"}).connect()
 
 
 const server=new ApolloServer({
@@ -46,7 +46,7 @@ const server=new ApolloServer({
       accessToken:req.headers.authorization,
       userLoaders:getUserLoader(),
       postLoaders:getPostLoader(),
-      redisClient:redisClient(),
+      redisClient:redisClient,
      }),
      formatError: (error) => { // Use error as a parameter
       if (error instanceof UserInputError) { // Check if the error is an instance of UserInputError
@@ -71,7 +71,6 @@ const server=new ApolloServer({
 
 const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.pubnynq.mongodb.net/${process.env.MONGO_DB}`;
 
-const startServer= async function(){
   await server.start()
   server.applyMiddleware({app})
   mongoose

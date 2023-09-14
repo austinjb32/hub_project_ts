@@ -1,3 +1,5 @@
+scalar JSON
+
 type Post {
     _id: ID
     title: String!
@@ -18,20 +20,15 @@ input postInputData{
     imageUrl:String
     }
 
-input postUpdateData{
-    id:String!
-    title:String!
-    content:String!
-    imageUrl:String
-    }
-
 extend type Query{
-    viewPost(postID:ID!):Post
-    viewPostsbyUserID(userID:ID!,search:String,skip:Int,offset:Int,filter:Int,limit:Int):[Post]
+    postById(postID:ID!):Post
+    post(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Post
+    posts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
 }
 
 
 extend type Mutation{
-    createPost(postInput:postInputData!):Post!
-    updatePost(userInput:postUpdateData!):Post!
+ createPost(data:postInputData!):Post!
+ updatePostById(postID:ID!, data:postInputData!):Post!
+ deletePost(postID:ID!):JSON
 }

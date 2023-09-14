@@ -4,7 +4,7 @@ const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const bcrypt_1 = tslib_1.__importDefault(require("bcrypt")); // Import your types here
 const jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
-const validation_1 = require("../../middleware/validation");
+const validation_1 = require("../../middleware/Validation/validation");
 class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewUser(userId, context) {
         const user = await context.userLoaders.load(userId);
@@ -63,7 +63,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         context.token = token;
         return { token: token, userId: user._id.toString(), refreshToken: refreshToken };
     }
-    async createUser(userInput) {
+    async createUser(userInput, context) {
         const validCreation = (0, validation_1.userCreationValidation)(userInput);
         if (validCreation.error) {
             throw new Error(`${validCreation.error.name}${validCreation.error.message}`);
@@ -80,6 +80,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             password: hashedPassword,
         });
         await newUser.save();
+        let dataStore = await context.redisClient.HSET('post', `${userInput}`, JSON.stringify(newUser));
         return {
             ...newUser.toObject(),
             _id: newUser._id.toString(),

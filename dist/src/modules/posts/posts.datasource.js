@@ -3,22 +3,22 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const tslib_1 = require("tslib");
 const apollo_datasource_mongodb_1 = require("apollo-datasource-mongodb");
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
-const validation_1 = require("../../middleware/validation");
 const users_model_1 = tslib_1.__importDefault(require("../users/users.model"));
 const lodash_1 = tslib_1.__importDefault(require("lodash"));
+const validation_1 = require("../../middleware/Validation/validation");
 class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
-    async viewPost(args, context) {
+    async postById(args, context) {
         if (!args) {
             throw new Error("No input");
         }
         await context.redisClient.connect();
-        let dataStore = await context.redisClient.HGET('post', `${args}`);
+        let dataStore = await context.redisClient.HGET("post", `${args}`);
         if (!dataStore) {
             const post = await this.model.findById(args);
             if (!post) {
                 throw new Error("Post not Found");
             }
-            let dataStore = await context.redisClient.HSET('post', `${args}`, JSON.stringify(post));
+            dataStore = await context.redisClient.HSET("post", `${args}`, JSON.stringify(post));
         }
         let post = JSON.parse(dataStore);
         context.redisClient.disconnect();
@@ -33,11 +33,12 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async viewPostsbyUserID(args) {
         const user = await users_model_1.default.findById(args.userID);
         if (!user) {
-            throw new Error('No User found');
+            throw new Error("No User found");
         }
-        const posts = await this.model.find({ creator: args.userID })
+        const posts = await this.model
+            .find({ ...args.filter })
             .skip(args.skip || 0)
-            .sort({ createdAt: (args.filter || 0) })
+            .sort(args.sort || 0)
             .limit(args.limit);
         if (!posts) {
             return "No Posts Available";
@@ -52,16 +53,16 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         pipeline.push({
             $search: {
                 index: "searchPosts",
-                "text": {
-                    "query": args.search,
-                    "path": "title",
-                    "fuzzy": {
-                        "maxEdits": 2
-                    }
-                }
-            }
+                text: {
+                    query: args.search.trim() || "",
+                    path: "title",
+                    fuzzy: {
+                        maxEdits: 2,
+                    },
+                },
+            },
         });
-        pipeline.push({ $sort: { ...({ updatedDate: args.sort || -1 }) } }, { $skip: args.offset || 0 }, { $limit: args.limit || 10 }, { $project: { "title": 1, content: 1 } });
+        pipeline.push({ $sort: { ...(args.sort || { updatedDate: -1 }) } }, { $skip: args.offset || 0 }, { $limit: args.limit || 10 }, { $project: { title: 1, content: 1 } });
         const postSearch = await this.model.aggregate(pipeline);
         if (!postSearch) {
             return "No Posts Available";
@@ -77,9 +78,8 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             throw new Error(`${postUpdateValidation.error.name},${postUpdateValidation.error.message}`);
         }
         async function redisUpdateOperations() {
-            await context.redisClient.connect();
-            await context.redisClient.HDEL('post', `${userInput.id}`);
-            await context.redisClient.HSET('post', `${userInput}`, JSON.stringify(post));
+            await context.redisClient.HDEL("post", `${userInput.id}`);
+            await context.redisClient.HSET("post", `${userInput}`, JSON.stringify(post));
             context.redisClient.disconnect();
         }
         const foundUser = await user_1.default.findById(context.userId);
@@ -125,7 +125,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             updatedAt: newPost.updatedAt.toString(),
         };
         await context.redisClient.connect();
-        await context.redisClient.HSET('post', `${formattedPost._id}`, JSON.stringify(formattedPost));
+        await context.redisClient.HSET("post", `${formattedPost._id}`, JSON.stringify(formattedPost));
         return formattedPost;
     }
 }

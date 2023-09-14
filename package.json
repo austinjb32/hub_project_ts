@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "ts-mocha -p tsconfig.json src/**/*.spec.ts",
     "generate": "graphql-codegen --config codegen.yml",
     "prestart": "tsc",
     "start": "node copyFile.js",
@@ -55,6 +55,7 @@
     "mongodb": "^6.0.0",
     "mongoose": "^7.5.0",
     "redis": "^4.6.8",
+    "ts-mocha": "^10.0.0",
     "typings": "^2.1.1",
     "validator": "^13.11.0",
     "validator.ts": "^0.2.2"
@@ -64,9 +65,14 @@
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@graphql-tools/load-files": "^7.0.0",
+    "@types/chai": "^4.3.6",
+    "@types/mocha": "^10.0.1",
     "@types/node": "^20.5.9",
+    "chai": "^4.3.8",
     "cors": "^2.8.5",
     "graphql-scalars": "^1.22.2",
-    "ts-node": "^10.9.1"
+    "mocha": "^10.2.0",
+    "ts-node": "^10.9.1",
+    "typescript-require": "^0.3.0"
   }
 }
