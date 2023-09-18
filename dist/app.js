@@ -10,7 +10,7 @@ const modules_1 = require("./src/modules");
 const http_1 = tslib_1.__importDefault(require("http"));
 const posts_dataLoaders_1 = require("./src/modules/posts/posts.dataLoaders");
 const users_dataLoader_1 = require("./src/modules/users/users.dataLoader");
-const redis_1 = require("redis");
+const redisService_1 = require("./src/utils/redisService");
 // import { redisClient } from "./src/middleware/Cache/redisCache";
 const startServer = async function () {
     const app = (0, express_1.default)();
@@ -26,7 +26,10 @@ const startServer = async function () {
         next();
     });
     app.use(errorResponse_1.default);
-    const redisClient = await (0, redis_1.createClient)({ url: "redis://localhost:8080" }).connect();
+    const redisClient = await redisService_1.CacheService.start({
+        redis_port: 8080,
+        redis_host: 'localhost',
+    });
     const server = new apollo_server_express_1.ApolloServer({
         schema: modules_1.Modules.schemas,
         csrfPrevention: true,

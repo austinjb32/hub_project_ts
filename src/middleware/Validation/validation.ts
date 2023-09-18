@@ -1,5 +1,5 @@
 import Joi from 'joi';
-import { Post, User } from '../../../__generated__/resolvers-types';
+import { Post, User, UserCreateData } from '../../../__generated__/resolvers-types';
 
 export const loginValidation=(login:{email:string,password:string})=>{
 
@@ -11,7 +11,7 @@ export const loginValidation=(login:{email:string,password:string})=>{
     return loginSchema.validate(login);
 }
 
-export const userCreationValidation=(user:Object)=>{
+export const userCreationValidation=(user:UserCreateData)=>{
 
   const userCreateSchema=Joi.object({
     email:Joi.string().email().required(),

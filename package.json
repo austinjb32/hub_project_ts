@@ -8,7 +8,7 @@
     "generate": "graphql-codegen --config codegen.yml",
     "prestart": "tsc",
     "start": "node copyFile.js",
-    "poststart": "nodemon dist/app.js"
+    "poststart": "nodemon --exec ts-node app.ts"
   },
   "repository": {
     "type": "git",
@@ -56,6 +56,7 @@
     "mongoose": "^7.5.0",
     "redis": "^4.6.8",
     "ts-mocha": "^10.0.0",
+    "typescript": "^5.2.2",
     "typings": "^2.1.1",
     "validator": "^13.11.0",
     "validator.ts": "^0.2.2"

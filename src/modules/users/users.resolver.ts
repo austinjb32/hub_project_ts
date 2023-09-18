@@ -2,33 +2,44 @@ import { Post, Resolvers, User } from "../../../__generated__/resolvers-types";
 import Relationship from "../../models/relationship";
 import Activity from "../../models/activity";
 import UserStatus from "../../models/userStatus";
+import { userContext } from "../../libs";
 
 
 export default {
   Query: {
-    viewUser: async (_, args, context) => {
+    user: async (_:any, args:any, context:any) => {
       // Access args.userID
-      // Call the getUserById method of the UserDataSource
-     
-      return context.dataSource.userModelDataSource.viewUser(args.userID,context as any);
+      if(args.search){
+        return context.dataSource.userModelDataSource.viewUserWithSearch(args,context);
+      }
+
+      return context.dataSource.userModelDataSource.viewUser(args,context);
       
     },
-    login: async (_, args, context) => {
-      // Access args
-      // Call the getUserById method of the UserDataSource
-      return context.dataSource.userModelDataSource.login(args as any, context as  any);
-    },
-    getUserById:async (_,args,context) => {
+    users :async (_:any,args:any,context:userContext) => {
+
+      if(args.search){
+        return context.dataSource.userModelDataSource.viewUsersWithSearch(args,context);
+      }
       
-      return context.dataSource.userModelDataSource.getUserById(args.userId)
+      return context.dataSource.userModelDataSource.viewUsers(args,context);
+
+    },
+    viewUserById: async (_:any,args:any,context:any)=>{
+      return context.dataSource.userModelDataSource.viewUserById(args.userID,context)
     }
   },
   Mutation: {
-    createUser: async (_, args, context) => {
+
+    updateUser: async (_:any,{userID,userInfoData}, context:userContext) => {
       // Access args.userInput
-      const userInput = args.userInput;
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.userModelDataSource.createUser(userInput,context);
+      return context.dataSource.userModelDataSource.updateUser(userInfoData as any,userID,context)
+    },
+    deleteUser: async (_:any, {userID}, context:userContext) => {
+      // Access args.userInput
+      // Call the createUser method of the UserDataSource.
+      return context.dataSource.userModelDataSource.deleteUser(userID,context);
     },
   },
   User: {
@@ -54,7 +65,7 @@ export default {
         .sort({ createdAt: -1 }) // Sort by createdAt in descending order to get the latest one
         .exec();
 
-      return latestActivity?.track?.activity;
+      return latestActivity?.lastActivity;
     },
     status: async (parent:User, args, context) => {// Replace with the correct argument name
       // You can now use userId in your resolver logic to fetch data
@@ -83,7 +94,7 @@ export default {
         throw new Error(err as string);
       }
         
-        
+      
   }
   },
 } as Resolvers;

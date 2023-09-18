@@ -4,34 +4,42 @@ const tslib_1 = require("tslib");
 const comment_1 = tslib_1.__importDefault(require("../../models/comment"));
 const like_1 = tslib_1.__importDefault(require("../../models/like"));
 exports.default = {
-    JSON: JSON,
     Query: {
-        postById: async (_, args, context) => {
+        post: async (_, args, context) => {
             // Call the getUserById method of the UserDataSource
-            return context.dataSource.postModelDataSource.postById(args.postID, context);
-        },
-        viewPostsbyUserID: async (_, args, context) => {
             if (args.search) {
-                return context.dataSource.postModelDataSource.viewPostsWithSearch(args);
+                return context.dataSource.postModelDataSource.viewPostWithSearch(args, context);
+            }
+            return context.dataSource.postModelDataSource.viewPost(args, context);
+        },
+        posts: async (_, args, context) => {
+            if (args.search) {
+                return context.dataSource.postModelDataSource.viewPostsWithSearch(args, context);
             }
             else {
-                return context.dataSource.postModelDataSource.viewPostsbyUserID(args);
+                return context.dataSource.postModelDataSource.viewPosts(args, context);
             }
         },
+        postById: async (_, { postID }, context) => {
+            return context.dataSource.postModelDataSource.viewPostById(postID, context);
+        }
     },
     Mutation: {
         createPost: async (_, args, context) => {
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.postModelDataSource.createPost(args.postInput, context);
+            return context.dataSource.postModelDataSource.createPost(args.data, context);
         },
-        updatePost: async (_, args, context) => {
+        updatePost: async (_, { postID, data }, context) => {
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.postModelDataSource.updatePost(args.userInput, context);
+            return context.dataSource.postModelDataSource.updatePost(postID, data, context);
+        },
+        deletePost: async (_, { postID }, context) => {
+            // Call the createUser method of the UserDataSource.
+            return context.dataSource.postModelDataSource.deletePost(postID, context);
         },
     },
     Post: {
         likesCount: async (parent, args, context) => {
-            // Replace with the correct argument name
             // You can now use userId in your resolver logic to fetch data
             const LikeCount = like_1.default.count({
                 typeID: parent._id, // Use userId here
@@ -39,7 +47,6 @@ exports.default = {
             return LikeCount;
         },
         commentCount: async (parent, args, context) => {
-            // Replace with the correct argument name
             // You can now use userId in your resolver logic to fetch data
             const commentCount = comment_1.default.count({
                 post: parent._id, // Use userId here
@@ -47,20 +54,15 @@ exports.default = {
             return commentCount;
         },
         isLiked: async (parent, args, context) => {
-            // Replace with the correct argument name
             // You can now use userId in your resolver logic to fetch data
             const userPost = await like_1.default.findOne({
-                $and: [
-                    { user: String(context.userId) },
-                    { typeID: parent._id },
-                    { type: "Post" },
-                ],
+                $and: [{ user: String(context.userId) }, { typeID: parent._id }, { type: 'Post' }]
             });
             if (!userPost) {
                 return false;
             }
             return true;
         },
-    },
+    }
 };
 //# sourceMappingURL=posts.resolver.js.map

@@ -13,6 +13,8 @@ import PostDataSource from "./posts/posts.datasource";
 
 import { TModule, userContext } from "../libs";
 import {userComposedResolvers,postComposedResolvers } from "../middleware/Composition/resolverCompostion";
+import AuthDataSource from "./auth/auth.dataSource";
+import authResolvers from "./auth/auth.resolvers";
 const typeDefs = mergeTypeDefs(
     loadFilesSync(path.resolve(__dirname + "/**/*.graphql"), {
       extensions: ["graphql"],
@@ -25,7 +27,7 @@ const typeDefs = mergeTypeDefs(
   );
 
 
-  const finalMergedResolvers = mergeResolvers([userComposedResolvers,postComposedResolvers]);
+  const finalMergedResolvers = mergeResolvers([userComposedResolvers,postComposedResolvers,authResolvers]);
   
 
 
@@ -47,6 +49,7 @@ export const Modules:TModule = {
   dataSource: {
     userModelDataSource: new UserDataSource(userModel),
     postModelDataSource: new PostDataSource(postModel),
+    authModelDataSource: new AuthDataSource(userModel)
 
   },
 

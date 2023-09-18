@@ -12,13 +12,15 @@ const users_datasource_1 = tslib_1.__importDefault(require("./users/users.dataso
 const posts_model_1 = tslib_1.__importDefault(require("./posts/posts.model"));
 const posts_datasource_1 = tslib_1.__importDefault(require("./posts/posts.datasource"));
 const resolverCompostion_1 = require("../middleware/Composition/resolverCompostion");
+const auth_dataSource_1 = tslib_1.__importDefault(require("./auth/auth.dataSource"));
+const auth_resolvers_1 = tslib_1.__importDefault(require("./auth/auth.resolvers"));
 const typeDefs = (0, merge_1.mergeTypeDefs)((0, load_files_1.loadFilesSync)(path_1.default.resolve(__dirname + "/**/*.graphql"), {
     extensions: ["graphql"],
 }));
 const resolvers = (0, merge_1.mergeResolvers)((0, load_files_1.loadFilesSync)(path_1.default.resolve(__dirname + "/**/*.resolver.{ts,js}"), {
     extensions: ["ts", "js"],
 }));
-const finalMergedResolvers = (0, merge_1.mergeResolvers)([resolverCompostion_1.userComposedResolvers, resolverCompostion_1.postComposedResolvers]);
+const finalMergedResolvers = (0, merge_1.mergeResolvers)([resolverCompostion_1.userComposedResolvers, resolverCompostion_1.postComposedResolvers, auth_resolvers_1.default]);
 exports.Modules = {
     models: {
         userModel: users_model_1.default,
@@ -35,6 +37,7 @@ exports.Modules = {
     dataSource: {
         userModelDataSource: new users_datasource_1.default(users_model_1.default),
         postModelDataSource: new posts_datasource_1.default(posts_model_1.default),
+        authModelDataSource: new auth_dataSource_1.default(users_model_1.default)
     },
 };
 //# sourceMappingURL=index.js.map

@@ -9,6 +9,7 @@ import { error } from "console";
 import { getPostLoader } from "./src/modules/posts/posts.dataLoaders";
 import { getUserLoader } from "./src/modules/users/users.dataLoader";
 import { createClient } from "redis";
+import { CacheService } from "./src/utils/redisService";
 // import { redisClient } from "./src/middleware/Cache/redisCache";
 
 
@@ -34,7 +35,12 @@ app.use((req, res, next) => {
 app.use(errorHandler);
 
 
-const redisClient = await createClient({url:"redis://localhost:8080"}).connect()
+const redisClient = await CacheService.start({
+  redis_port:8080,
+  redis_host:'localhost',
+})
+
+
 
 
 const server=new ApolloServer({

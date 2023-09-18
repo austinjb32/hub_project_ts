@@ -6,26 +6,33 @@ const activity_1 = tslib_1.__importDefault(require("../../models/activity"));
 const userStatus_1 = tslib_1.__importDefault(require("../../models/userStatus"));
 exports.default = {
     Query: {
-        viewUser: async (_, args, context) => {
+        user: async (_, args, context) => {
             // Access args.userID
-            // Call the getUserById method of the UserDataSource
-            return context.dataSource.userModelDataSource.viewUser(args.userID, context);
+            if (args.search) {
+                return context.dataSource.userModelDataSource.viewUserWithSearch(args, context);
+            }
+            return context.dataSource.userModelDataSource.viewUser(args, context);
         },
-        login: async (_, args, context) => {
-            // Access args
-            // Call the getUserById method of the UserDataSource
-            return context.dataSource.userModelDataSource.login(args, context);
+        users: async (_, args, context) => {
+            if (args.search) {
+                return context.dataSource.userModelDataSource.viewUsersWithSearch(args, context);
+            }
+            return context.dataSource.userModelDataSource.viewUsers(args, context);
         },
-        getUserById: async (_, args, context) => {
-            return context.dataSource.userModelDataSource.getUserById(args.userId);
+        viewUserById: async (_, args, context) => {
+            return context.dataSource.userModelDataSource.viewUserById(args.userID, context);
         }
     },
     Mutation: {
-        createUser: async (_, args, context) => {
+        updateUser: async (_, { userID, userInfoData }, context) => {
             // Access args.userInput
-            const userInput = args.userInput;
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.userModelDataSource.createUser(userInput, context);
+            return context.dataSource.userModelDataSource.updateUser(userInfoData, userID, context);
+        },
+        deleteUser: async (_, { userID }, context) => {
+            // Access args.userInput
+            // Call the createUser method of the UserDataSource.
+            return context.dataSource.userModelDataSource.deleteUser(userID, context);
         },
     },
     User: {
@@ -50,7 +57,7 @@ exports.default = {
             })
                 .sort({ createdAt: -1 }) // Sort by createdAt in descending order to get the latest one
                 .exec();
-            return latestActivity?.track?.activity;
+            return latestActivity?.lastActivity;
         },
         status: async (parent, args, context) => {
             // You can now use userId in your resolver logic to fetch data

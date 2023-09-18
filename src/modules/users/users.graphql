@@ -34,6 +34,15 @@ type Activity{
 }
 
 input UserInputData{
+    email:String
+    name:String
+    bio:String
+    status:String
+    imageUrl:String
+    isAdmin:Boolean
+}
+
+input UserCreateData{
     email:String!
     name:String!
     password:String!
@@ -41,13 +50,13 @@ input UserInputData{
 
 
 
-
 extend type Query{
-login(email:String!, password:String!): AuthData!
-viewUser(userID:ID!):User!
-getUserById(userId:ID!):User
+viewUserById(userID:ID!):User!
+user(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
+users(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
 }
 
 extend type Mutation{
-    createUser(userInput:UserInputData!):User!
+    updateUser(userID:ID!,userInfoData:UserInputData):User!
+    deleteUser(userID:ID!):JSON
 }

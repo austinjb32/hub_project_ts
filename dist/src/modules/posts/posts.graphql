@@ -22,13 +22,13 @@ input postInputData{
 
 extend type Query{
     postById(postID:ID!):Post
-    post(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Post
+    post(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
     posts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
 }
 
 
 extend type Mutation{
  createPost(data:postInputData!):Post!
- updatePostById(postID:ID!, data:postInputData!):Post!
+ updatePost(postID:ID!, data:postInputData!):Post!
  deletePost(postID:ID!):JSON
 }

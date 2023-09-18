@@ -5,27 +5,37 @@ import { composeResolvers, ResolversComposerMapping } from "@graphql-tools/resol
 import { AuthData, Resolvers, User } from "../../../__generated__/resolvers-types";
 
 // Import your authentication functions
-import { isAuthenticated, isAdmin } from "../Authentication/auth";
+import { isAuthenticated, isAdmin} from "../Authentication/auth";
 import userResolvers from "../../modules/users/users.resolver";
 import postResolvers from "../../modules/posts/posts.resolver";
+import {isPostDataCachedInRedis, isPostsCachedInRedis, isUserDataCachedInRedis, isUsersCachedInRedis } from "../Cache/redisCache";
 
 // Define your resolvers composition
 const userResolversComposition: ResolversComposerMapping<Resolvers> = {
   Query: {
-    viewUser: [isAuthenticated()],
+    viewUserById: [isAuthenticated(),isUserDataCachedInRedis()],
+    users:[isUsersCachedInRedis()],
+    user:[isUsersCachedInRedis()]
     
   },
+  Mutation:{
+    updateUser:[isAuthenticated()],
+    deleteUser:[isAuthenticated()]
+  }
 };
 
 
 const postResolversComposition: ResolversComposerMapping<Resolvers> = {
     Query: {
-        viewPost:[isAuthenticated()],
+        viewPost:[isAuthenticated(),isPostDataCachedInRedis()],
+        posts:[isPostsCachedInRedis()],
+        post:[isPostsCachedInRedis()]
       
     },
     Mutation:{
         createPost:[isAuthenticated(),isAdmin()],
-        updatePost:[isAuthenticated()]
+        updatePost:[isAuthenticated()],
+        deletePost:[isAuthenticated()],
     }
   };
 

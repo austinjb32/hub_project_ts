@@ -18,7 +18,6 @@ import { GraphQLError } from 'graphql';
 export const isAuthenticated=  () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context: { accessToken: string, userId:String,refreshToken:string  }, info: any) => {
   
   let token=context.accessToken;
-  
 
   if(!token){
     throw new Error('No Token found')

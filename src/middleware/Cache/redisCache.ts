@@ -1,8 +1,89 @@
-import { createClient } from "redis";
+import postModel from "../../modules/posts/posts.model";
+import UserModel from "../../modules/users/users.model";
+import { encodetoJSON } from "../../utils/CustomUtils"
 
 
-export const redisClient = createClient({url:"redis://localhost:8080/"})
+export const isPostsCachedInRedis = () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context:{ redisClient:any }, info: any) => {
+  try {
+    const encodedJSON=encodetoJSON(args)
+    const dataStore= await context.redisClient.client.HGET('postsSearch',encodedJSON)
+    if(!dataStore){
+     return next(root,args,context,info);
+    }
+    console.log('redis')
+    let data = JSON.parse(dataStore!);
+    const arrayPosts = Object.values(data);
+
+    const formattedPost = arrayPosts.map((post: any) => {
+      post=postModel.hydrate(post);
+      return { ...post._doc };
+    });
+     return formattedPost;
+  } catch (error) {
+    throw error
+  }
+  }
+
+  export const isUsersCachedInRedis = () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context:{ redisClient:any, deviceClient:any }, info: any) => {
+    try {
+      const encodedJSON=encodetoJSON(args)
+      const dataStore= await context.redisClient.client.HGET('usersSearch',encodedJSON)
+      console.log(context.deviceClient);
+      if(!dataStore){
+       return next(root,args,context,info);
+      }
+      console.log('redis')
+      let data = JSON.parse(dataStore!);
+      const arrayUsers = Object.values(data);
   
-export function isInRedis(){
-    return null
-}
+      const formattedUser = arrayUsers.map((user: any) => {
+        user=UserModel.hydrate(user);
+        return { ...user._doc };
+      });
+       return formattedUser;
+    } catch (error) {
+      throw error
+    }
+    }
+
+    export const isPostDataCachedInRedis = () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context:{ redisClient:any }, info: any) => {
+      try {
+        const encodedJSON=encodetoJSON(args)
+        const dataStore= await context.redisClient.client.HGET('posts',encodedJSON)
+        if(!dataStore){
+         return next(root,args,context,info);
+        }
+        console.log('redis')
+        let data = JSON.parse(dataStore!);
+        const arrayPosts = Object.values(data);
+    
+        const formattedPost = arrayPosts.map((post: any) => {
+          post=postModel.hydrate(post);
+          return { ...post._doc };
+        });
+         return formattedPost;
+      } catch (error) {
+        throw error
+      }
+      }
+
+      export const isUserDataCachedInRedis = () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context:{ redisClient:any }, info: any) => {
+        try {
+          const encodedJSON=encodetoJSON(args)
+          const dataStore= await context.redisClient.client.HGET('users',encodedJSON)
+          if(!dataStore){
+           return next(root,args,context,info);
+          }
+          console.log('redis')
+          let data = JSON.parse(dataStore!);
+          const arrayPosts = Object.values(data);
+      
+          const formattedPost = arrayPosts.map((post: any) => {
+            post=postModel.hydrate(post);
+            return { ...post._doc };
+          });
+           return formattedPost;
+        } catch (error) {
+          throw error
+        }
+        }
