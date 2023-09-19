@@ -35,8 +35,7 @@ class AuthDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     );
     context.token = token;
     //////////////////{Refresh Token}/////////////////////
-    let refreshToken;
-    refreshToken = jsonwebtoken_1.default.sign(
+    const refreshToken = jsonwebtoken_1.default.sign(
       {
         email: user.email,
         userId: user._id.toString(),

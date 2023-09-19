@@ -14,7 +14,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
       if (!args) {
         throw new Error("No input");
       }
-      let post = await context.postLoaders.load(args);
+      const post = await context.postLoaders.load(args);
       if (!post) {
         throw new Error("Post not Found");
       }
@@ -36,7 +36,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   ///////////////********* VIEW POST ***************/////////////////////////
   async viewPost(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    let dataStore = await context.redisClient.client.HGET(
+    const dataStore = await context.redisClient.client.HGET(
       "postsSearch",
       `${encodedJSON}`,
     );
@@ -74,7 +74,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         JSON.stringify(postSearch),
       );
     }
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchPosts",
@@ -107,7 +107,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   ///////////////********* VIEW POSTS ***************/////////////////////////
   async viewPosts(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    let dataStore = await context.redisClient.client.HGET(
+    const dataStore = await context.redisClient.client.HGET(
       "postsSearch",
       `${encodedJSON}`,
     );
@@ -147,7 +147,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         JSON.stringify(postSearch),
       );
     }
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchPosts",
@@ -202,7 +202,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   }
   async countPostsWithSearch(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchPosts",

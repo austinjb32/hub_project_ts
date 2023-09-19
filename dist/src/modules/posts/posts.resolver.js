@@ -65,6 +65,7 @@ exports.default = {
   },
   Post: {
     likesCount: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use userId in your resolver logic to fetch data
       const LikeCount = like_1.default.count({
         typeID: parent._id, // Use userId here
@@ -72,6 +73,7 @@ exports.default = {
       return LikeCount;
     },
     commentCount: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use userId in your resolver logic to fetch data
       const commentCount = comment_1.default.count({
         post: parent._id, // Use userId here
@@ -79,6 +81,7 @@ exports.default = {
       return commentCount;
     },
     isLiked: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use userId in your resolver logic to fetch data
       const userPost = await like_1.default.findOne({
         $and: [

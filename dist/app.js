@@ -14,7 +14,7 @@ const redisService_1 = require("./src/utils/redisService");
 // import { redisClient } from "./src/middleware/Cache/redisCache";
 const startServer = async function () {
   const app = (0, express_1.default)();
-  const httpServer = http_1.default.createServer(app);
+  http_1.default.createServer(app);
   app.use(body_parser_1.default.json());
   app.use((req, res, next) => {
     res.setHeader("Access-Control-Allow-Origin", "*");
@@ -49,6 +49,7 @@ const startServer = async function () {
       redisClient: redisClient,
     }),
     formatError: (error) => {
+      // Use error as a parameter
       if (error instanceof apollo_server_express_1.UserInputError) {
         // Check if the error is an instance of UserInputError
         throw new Error("User Input error occurred"); // Throw a custom error message
@@ -73,7 +74,7 @@ const startServer = async function () {
   server.applyMiddleware({ app });
   mongoose_1.default
     .connect(MONGO_URI)
-    .then((result) => {
+    .then(() => {
       app.listen({ port: 4000 }, () => {
         console.log(
           "Server running on port 4000 http://localhost:4000/graphql",

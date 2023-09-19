@@ -59,14 +59,16 @@ exports.default = {
     },
   },
   User: {
-    following: async (parent, args, context) => {
+    following: async (parent) => {
+      // Replace with the correct argument name
       // You can now use dataID in your resolver logic to fetch data
       const followingCount = relationship_1.default.count({
         following: parent._id, // Use dataID here
       });
       return followingCount;
     },
-    followers: async (parent, args, _context) => {
+    followers: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use dataID in your resolver logic to fetch data
       const followerCount = relationship_1.default.count({
         user: parent._id, // Use dataID here
@@ -74,6 +76,7 @@ exports.default = {
       return followerCount;
     },
     lastActivity: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use dataID in your resolver logic to fetch data
       const latestActivity = await activity_1.default
         .findOne({
@@ -84,6 +87,7 @@ exports.default = {
       return latestActivity?.lastActivity;
     },
     status: async (parent, args, context) => {
+      // Replace with the correct argument name
       // You can now use dataID in your resolver logic to fetch data
       const lateststatus = await userStatus_1.default
         .findOne({

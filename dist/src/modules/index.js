@@ -32,14 +32,11 @@ const typeDefs = (0, merge_1.mergeTypeDefs)(
     },
   ),
 );
-const resolvers = (0, merge_1.mergeResolvers)(
-  (0, load_files_1.loadFilesSync)(
-    path_1.default.resolve(__dirname + "/**/*.resolver.{ts,js}"),
-    {
-      extensions: ["ts", "js"],
-    },
-  ),
-);
+// const resolvers = mergeResolvers(
+//   loadFilesSync(path.resolve(__dirname + "/**/*.resolver.{ts,js}"), {
+//     extensions: ["ts", "js"],
+//   }),
+// );
 const finalMergedResolvers = (0, merge_1.mergeResolvers)([
   resolverCompostion_1.userComposedResolvers,
   resolverCompostion_1.postComposedResolvers,

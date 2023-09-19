@@ -8,6 +8,7 @@ exports.isUserDataCachedInRedis =
   exports.isPostsCachedInRedis =
     void 0;
 const tslib_1 = require("tslib");
+/* eslint-disable no-useless-catch */
 const posts_model_1 = tslib_1.__importDefault(
   require("../../modules/posts/posts.model"),
 );
@@ -27,7 +28,7 @@ const isPostsCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       const arrayPosts = Object.values(data);
       const formattedPost = arrayPosts.map((post) => {
         post = posts_model_1.default.hydrate(post);
@@ -51,7 +52,7 @@ const isPostsCountCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       return data;
     } catch (error) {
       throw error;
@@ -70,7 +71,7 @@ const isUsersCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       const arrayUsers = Object.values(data);
       const formattedUser = arrayUsers.map((user) => {
         user = users_model_1.default.hydrate(user);
@@ -94,7 +95,7 @@ const isUsersCountCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       return data;
     } catch (error) {
       throw error;
@@ -113,7 +114,7 @@ const isPostDataCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       const arrayPosts = Object.values(data);
       const formattedPost = arrayPosts.map((post) => {
         post = posts_model_1.default.hydrate(post);
@@ -137,7 +138,7 @@ const isUserDataCachedInRedis =
         return next(root, args, context, info);
       }
       console.log("redis");
-      let data = JSON.parse(dataStore);
+      const data = JSON.parse(dataStore);
       const formattedPost = posts_model_1.default.hydrate(data);
       return formattedPost;
     } catch (error) {

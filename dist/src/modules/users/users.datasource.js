@@ -29,7 +29,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   }
   async viewUser(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    let dataStore = await context.redisClient.client.HGET(
+    const dataStore = await context.redisClient.client.HGET(
       "usersSearch",
       `${encodedJSON}`,
     );
@@ -62,7 +62,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   }
   async viewUsers(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    let dataStore = await context.redisClient.client.HGET(
+    const dataStore = await context.redisClient.client.HGET(
       "usersSearch",
       `${encodedJSON}`,
     );
@@ -102,7 +102,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         JSON.stringify(userSearch),
       );
     }
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchUsers",
@@ -142,7 +142,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         JSON.stringify(userSearch),
       );
     }
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchUsers",
@@ -201,7 +201,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         JSON.stringify(userSearch),
       );
     }
-    let pipeline = [];
+    const pipeline = [];
     pipeline.push({
       $search: {
         index: "searchUsers",

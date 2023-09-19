@@ -6,7 +6,7 @@ const jsonwebtoken_1 = tslib_1.__importDefault(require("jsonwebtoken"));
 const user_1 = tslib_1.__importDefault(require("../../models/user"));
 const graphql_1 = require("graphql");
 const isAuthenticated = () => (next) => async (root, args, context, info) => {
-  let token = context.accessToken;
+  const token = context.accessToken;
   if (!token) {
     throw new Error("No Token found");
   }
