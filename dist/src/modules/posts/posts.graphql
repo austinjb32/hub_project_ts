@@ -1,35 +1,52 @@
 scalar JSON
 
 type Post {
-    _id: ID
-    title: String!
-    content: String!
-    imageUrl: String
-    creator: User
-    createdAt: String
-    updatedAt: String
-    isLiked:Boolean
-    shareCount:Int
-    likesCount:Int
-    commentCount:Int
+  _id: ID
+  title: String!
+  content: String!
+  imageUrl: String
+  creator: User
+  createdAt: String
+  updatedAt: String
+  isLiked: Boolean
+  shareCount: Int
+  likesCount: Int
+  commentCount: Int
 }
 
-input postInputData{
-    title:String!
-    content:String!
-    imageUrl:String
-    }
-
-extend type Query{
-    postById(dataID:ID!):Post
-    post(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
-    posts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
-    countPosts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Int
+input postInputData {
+  title: String!
+  content: String!
+  imageUrl: String
 }
 
+extend type Query {
+  postById(dataID: ID!): Post
+  post(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): [Post]
+  posts(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): [Post]
+  countPosts(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): Int
+}
 
-extend type Mutation{
- createPost(data:postInputData!):Post!
- updatePost(dataID:ID!, data:postInputData!):Post!
- deletePost(dataID:ID!):JSON
+extend type Mutation {
+  createPost(data: postInputData!): Post!
+  updatePost(dataID: ID!, data: postInputData!): Post!
+  deletePost(dataID: ID!): JSON
 }

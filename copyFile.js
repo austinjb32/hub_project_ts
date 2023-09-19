@@ -1,4 +1,10 @@
-const { readdirSync, statSync, readFileSync, writeFileSync, mkdirSync } = require("fs");
+const {
+  readdirSync,
+  statSync,
+  readFileSync,
+  writeFileSync,
+  mkdirSync,
+} = require("fs");
 const { join, relative, dirname, extname } = require("path");
 
 const SOURCE_DIR = "./src";

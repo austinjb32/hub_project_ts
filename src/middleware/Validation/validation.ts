@@ -1,46 +1,46 @@
-import Joi from 'joi';
-import { Post, User, UserCreateData } from '../../../__generated__/resolvers-types';
+import Joi from "joi";
+import { Post, UserCreateData } from "../../../__generated__/resolvers-types";
 
-export const loginValidation=(login:{email:string,password:string})=>{
+export const loginValidation = (login: { email: string; password: string }) => {
+  const loginSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string().min(8).max(30).required(),
+  });
 
-    const loginSchema=Joi.object({
-      email:Joi.string().email().required(),
-      password:Joi.string().min(8).max(30).required()
-    });
+  return loginSchema.validate(login);
+};
 
-    return loginSchema.validate(login);
-}
-
-export const userCreationValidation=(user:UserCreateData)=>{
-
-  const userCreateSchema=Joi.object({
-    email:Joi.string().email().required(),
-    password:Joi.string().pattern(new RegExp('^[a-zA-Z0-9@#]{3,30}$')).min(8).max(30).required(),
-    confirmPassword:Joi.ref('password'),
-    name:Joi.string().min(3).required()
+export const userCreationValidation = (user: UserCreateData) => {
+  const userCreateSchema = Joi.object({
+    email: Joi.string().email().required(),
+    password: Joi.string()
+      .pattern(new RegExp("^[a-zA-Z0-9@#]{3,30}$"))
+      .min(8)
+      .max(30)
+      .required(),
+    confirmPassword: Joi.ref("password"),
+    name: Joi.string().min(3).required(),
   });
 
   return userCreateSchema.validate(user);
-}
+};
 
-export const postCreationValidation=(post:Post)=>{
-
-  const postCreateSchema=Joi.object({
-    title:Joi.string().min(3).max(30).required(),
-    content:Joi.string().min(8).max(30).required(),
-    imageUrl:Joi.string().min(3)
+export const postCreationValidation = (post: Post) => {
+  const postCreateSchema = Joi.object({
+    title: Joi.string().min(3).max(30).required(),
+    content: Joi.string().min(8).max(30).required(),
+    imageUrl: Joi.string().min(3),
   });
 
   return postCreateSchema.validate(post);
-}
-export const postUpdationValidation=(postEdit:any)=>{
-
-  const postUpdateSchema=Joi.object({
-    id:Joi.string().required(),
-    title:Joi.string().min(3).max(30).required(),
-    content:Joi.string().min(8).max(30).required(),
-    imageUrl:Joi.string().min(3)
+};
+export const postUpdationValidation = (postEdit: any) => {
+  const postUpdateSchema = Joi.object({
+    id: Joi.string().required(),
+    title: Joi.string().min(3).max(30).required(),
+    content: Joi.string().min(8).max(30).required(),
+    imageUrl: Joi.string().min(3),
   });
 
   return postUpdateSchema.validate(postEdit);
-}
+};

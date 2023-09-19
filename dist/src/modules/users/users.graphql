@@ -1,63 +1,79 @@
-type User{
-    _id:ID
-    email:String!
-    name:String!
-    password:String
-    bio:String
-    status:String
-    posts(
-    limit:Int
-    offset:Int
-    search:String
-    sort:String
-    filter:String
-    ):[Post]
-    imageUrl:String
-    isAdmin:Boolean
-    createdAt:String
-    updatedAt:String
-    followers:Int,
-    following:Int,
-    lastActivity:String
+type User {
+  _id: ID
+  email: String!
+  name: String!
+  password: String
+  bio: String
+  status: String
+  posts(
+    limit: Int
+    offset: Int
+    search: String
+    sort: String
+    filter: String
+  ): [Post]
+  imageUrl: String
+  isAdmin: Boolean
+  createdAt: String
+  updatedAt: String
+  followers: Int
+  following: Int
+  lastActivity: String
 }
 
-type AuthData{
-    token:String!
-    refreshToken:String
-    userId:String!
+type AuthData {
+  token: String!
+  refreshToken: String
+  userId: String!
 }
 
-type Activity{
-    _id:ID
-    user:ID!
-    track:String!
+type Activity {
+  _id: ID
+  user: ID!
+  track: String!
 }
 
-input UserInputData{
-    email:String
-    name:String
-    bio:String
-    status:String
-    imageUrl:String
-    isAdmin:Boolean
+input UserInputData {
+  email: String
+  name: String
+  bio: String
+  status: String
+  imageUrl: String
+  isAdmin: Boolean
 }
 
-input UserCreateData{
-    email:String!
-    name:String!
-    password:String!
+input UserCreateData {
+  email: String!
+  name: String!
+  password: String!
 }
 
-
-
-extend type Query{
-viewUserById(dataID:ID!):User!
-user(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
-users(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
-countUsers(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Int
+extend type Query {
+  viewUserById(dataID: ID!): User!
+  user(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): [User]
+  users(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): [User]
+  countUsers(
+    search: String
+    sort: JSON
+    offset: Int
+    filter: JSON
+    limit: Int
+  ): Int
 }
 
-extend type Mutation{
-    updateUser(dataID:ID!,userInfoData:UserInputData):User!
-    deleteUser(dataID:ID!):JSON
+extend type Mutation {
+  updateUser(dataID: ID!, userInfoData: UserInputData): User!
+  deleteUser(dataID: ID!): JSON
 }

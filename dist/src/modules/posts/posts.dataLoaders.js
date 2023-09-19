@@ -6,25 +6,27 @@ const dataloader_1 = tslib_1.__importDefault(require("dataloader"));
 const posts_model_1 = tslib_1.__importDefault(require("./posts.model"));
 // Define a function to fetch posts by an array of user IDs
 const getPostsByUserId = async (userId) => {
-    const posts = await posts_model_1.default.find({ creator: userId });
-    return posts;
+  const posts = await posts_model_1.default.find({ creator: userId });
+  return posts;
 };
-const getPostFromUserIDLoader = () => new dataloader_1.default(async (userIds) => {
+const getPostFromUserIDLoader = () =>
+  new dataloader_1.default(async (userIds) => {
     // Since you have only one user, you can fetch posts for that user
     const userPosts = await getPostsByUserId(userIds[0]);
     // Return the posts directly as an array
     return [userPosts];
-});
+  });
 exports.getPostFromUserIDLoader = getPostFromUserIDLoader;
 const getPost = async (userId) => {
-    const post = await posts_model_1.default.find({ _id: userId });
-    return post;
+  const post = await posts_model_1.default.find({ _id: userId });
+  return post;
 };
-const getPostLoader = () => new dataloader_1.default(async (userIds) => {
+const getPostLoader = () =>
+  new dataloader_1.default(async (userIds) => {
     // Since you have only one user, you can fetch posts for that user
     const userPosts = await getPost(userIds[0]);
     // Return the posts directly as an array
     return [userPosts];
-});
+  });
 exports.getPostLoader = getPostLoader;
 //# sourceMappingURL=posts.dataLoaders.js.map

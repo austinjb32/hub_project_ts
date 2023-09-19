@@ -1,82 +1,106 @@
-import { NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../../../__generated__/resolvers-types";
-import { userContext } from "../../libs";
 import Users from "../../models/user";
-import { Resolver } from "dns";
 
-interface JWTPayload{
-  userId:String,
-  email:String,
+interface JWTPayload {
+  userId: string;
+  email: string;
 }
 
-import { GraphQLError } from 'graphql';
+import { GraphQLError } from "graphql";
 
+export const isAuthenticated =
+  () =>
+  (next: (root: any, args: any, context: any, info: any) => any) =>
+  async (
+    root: any,
+    args: any,
+    context: { accessToken: string; userId: string; refreshToken: string },
+    info: any,
+  ) => {
+    const token = context.accessToken;
 
-
-
-export const isAuthenticated=  () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context: { accessToken: string, userId:String,refreshToken:string  }, info: any) => {
-  
-  let token=context.accessToken;
-
-  if(!token){
-    throw new Error('No Token found')
-  }
-
-
-  const decodedToken = jwt.verify(context.accessToken, 'somesupersecretsecret') as JWTPayload;
-
-  const foundUser= await Users.findById(decodedToken.userId)
-
-    if(!foundUser){
-      throw new Error('No users found')
+    if (!token) {
+      throw new Error("No Token found");
     }
 
-    const receivedPosts=foundUser.posts!.forEach((e)=>{e._id.toString()})
+    const decodedToken = jwt.verify(
+      context.accessToken,
+      "somesupersecretsecret",
+    ) as JWTPayload;
 
-  const formattedUser:User= {...foundUser, _id:foundUser?._id.toString(), createdAt:foundUser?.createdAt.toISOString(),
-  updatedAt:foundUser?.updatedAt.toISOString(),posts:receivedPosts!}
- 
-  context.userId=formattedUser._id!.toString()
+    const foundUser = await Users.findById(decodedToken.userId);
 
-  return next(root,args,context,info);
-};
- 
-export const isAdmin = () => (next: (root: any,args: any,context: any,info: any) => any) => async (root: any, args: any, context:{ accessToken: string, userId:String }, info: any) => {
+    if (!foundUser) {
+      throw new Error("No users found");
+    }
 
-  if (!context.accessToken) {
-    throw new GraphQLError('You are not authorized to perform this action.', {
-      extensions: {
-        code: 'BAD_USER_INPUT',
-      },
+    const receivedPosts = foundUser.posts!.forEach((e) => {
+      e._id.toString();
     });
-  }
 
-  const decodedToken = jwt.verify(context.accessToken, 'somesupersecretsecret') as JWTPayload;
+    const formattedUser: User = {
+      ...foundUser,
+      _id: foundUser?._id.toString(),
+      createdAt: foundUser?.createdAt.toISOString(),
+      updatedAt: foundUser?.updatedAt.toISOString(),
+      posts: receivedPosts!,
+    };
 
-  const foundUser= await Users.findById(decodedToken.userId)
+    context.userId = formattedUser._id!.toString();
 
-  if(!foundUser){
-    throw new Error('No User Found');
-  }
+    return next(root, args, context, info);
+  };
 
-  if(!((foundUser.isAdmin)||(args.dataID!==foundUser._id.toString()))){
-    throw new GraphQLError('You are not authorized to perform this action.', {
-      extensions: {
-        code: 'FORBIDDEN',
-      },
+export const isAdmin =
+  () =>
+  (next: (root: any, args: any, context: any, info: any) => any) =>
+  async (
+    root: any,
+    args: any,
+    context: { accessToken: string; userId: string },
+    info: any,
+  ) => {
+    if (!context.accessToken) {
+      throw new GraphQLError("You are not authorized to perform this action.", {
+        extensions: {
+          code: "BAD_USER_INPUT",
+        },
+      });
+    }
+
+    const decodedToken = jwt.verify(
+      context.accessToken,
+      "somesupersecretsecret",
+    ) as JWTPayload;
+
+    const foundUser = await Users.findById(decodedToken.userId);
+
+    if (!foundUser) {
+      throw new Error("No User Found");
+    }
+
+    if (!(foundUser.isAdmin || args.dataID !== foundUser._id.toString())) {
+      throw new GraphQLError("You are not authorized to perform this action.", {
+        extensions: {
+          code: "FORBIDDEN",
+        },
+      });
+    }
+
+    const receivedPosts = foundUser.posts!.forEach((e) => {
+      e._id.toString();
     });
-  }
 
-  
-  const receivedPosts=foundUser.posts!.forEach((e)=>{e._id.toString()})
+    const formattedUser: User = {
+      ...foundUser,
+      _id: foundUser?._id.toString(),
+      createdAt: foundUser?.createdAt.toISOString(),
+      updatedAt: foundUser?.updatedAt.toISOString(),
+      posts: receivedPosts!,
+    };
 
-  const formattedUser:User= {...foundUser, _id:foundUser?._id.toString(), createdAt:foundUser?.createdAt.toISOString(),
-    updatedAt:foundUser?.updatedAt.toISOString(),posts:receivedPosts!}
+    context.userId = formattedUser._id!.toString();
 
-    context.userId=formattedUser._id!.toString()
-
-    return next(root,args,context,info);
-};
-
-
+    return next(root, args, context, info);
+  };

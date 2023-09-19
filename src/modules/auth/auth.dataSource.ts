@@ -1,86 +1,84 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
-import { AuthData, User, UserCreateData } from "../../../__generated__/resolvers-types";
-import { loginValidation, userCreationValidation } from "../../middleware/Validation/validation";
+import {
+  AuthData,
+  User,
+  UserCreateData,
+} from "../../../__generated__/resolvers-types";
+import {
+  loginValidation,
+  userCreationValidation,
+} from "../../middleware/Validation/validation";
 import activity from "../../models/activity";
 import { IUserSchemaDocument } from "../users/users.model";
-import bcrypt from 'bcrypt';
-import jwt from 'jsonwebtoken';
+import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
 
 export default class AuthDataSource extends MongoDataSource<IUserSchemaDocument> {
+  async login({ email, password }: any, context: AuthData) {
+    const user = await this.model.findOne({ email: email }).exec();
+    if (!user) {
+      const error = new Error("No User Found");
+      throw error;
+    }
 
-    async login({email,password}:any,context:AuthData) {
-        const user = await this.model.findOne({ email: email }).exec();
-        if (!user) {
-          const error = new Error("No User Found");
-          throw error;
-        }
-        
-        const validLogin= loginValidation({email,password})
-    
-        if(validLogin.error){
-          throw new Error(`${validLogin.error.name}${validLogin.error.message}`);
-        }
-    
-        const hashedPassword = bcrypt.compareSync(
-          password,
-          user.password
-        );
-        if (!hashedPassword) {
-          throw new Error("Wrong Password");
-        }
-    
-    //////////////////{User Token}/////////////////////        
+    const validLogin = loginValidation({ email, password });
 
+    if (validLogin.error) {
+      throw new Error(`${validLogin.error.name}${validLogin.error.message}`);
+    }
 
-        const token = jwt.sign(
-          {
-            email: user.email,
-            userId: user._id.toString(),
-          },
-          "somesupersecretsecret",
-          { expiresIn: "1h" }
-        );
-    
-        context.token=token
-        //////////////////{Refresh Token}/////////////////////
+    const hashedPassword = bcrypt.compareSync(password, user.password);
+    if (!hashedPassword) {
+      throw new Error("Wrong Password");
+    }
 
-        let refreshToken;
-    
-          refreshToken = jwt.sign(
-            {
-              email: user.email,
-              userId: user._id.toString(),
-            },
-            "somesupersecretsecret",
-            { expiresIn: "30d" }
-            
-          );
-          context.refreshToken=refreshToken
-    
-    
+    //////////////////{User Token}/////////////////////
 
-       const  lastData="User Logged In"
-        
-        const updateActivity= new activity({
-          userId:user._id,
-          track:[{activity:lastData}],
-          lastActivity:lastData
-        })
-    
-        updateActivity.save()
-    
-        return { token: token, userId: user._id.toString(),refreshToken:refreshToken };
-      }
-    
+    const token = jwt.sign(
+      {
+        email: user.email,
+        userId: user._id.toString(),
+      },
+      "somesupersecretsecret",
+      { expiresIn: "1h" },
+    );
 
-async createUser(userInput:UserCreateData,context:any): Promise<User> {
-  
-    const validCreation= userCreationValidation(userInput)
+    context.token = token;
+    //////////////////{Refresh Token}/////////////////////
+    const refreshToken = jwt.sign(
+      {
+        email: user.email,
+        userId: user._id.toString(),
+      },
+      "somesupersecretsecret",
+      { expiresIn: "30d" },
+    );
+    context.refreshToken = refreshToken;
 
+    const lastData = "User Logged In";
 
+    const updateActivity = new activity({
+      userId: user._id,
+      track: [{ activity: lastData }],
+      lastActivity: lastData,
+    });
 
-    if(validCreation.error){
-      throw new Error(`${validCreation.error.name}${validCreation.error.message}`);
+    updateActivity.save();
+
+    return {
+      token: token,
+      userId: user._id.toString(),
+      refreshToken: refreshToken,
+    };
+  }
+
+  async createUser(userInput: UserCreateData, context: any): Promise<User> {
+    const validCreation = userCreationValidation(userInput);
+
+    if (validCreation.error) {
+      throw new Error(
+        `${validCreation.error.name}${validCreation.error.message}`,
+      );
     }
 
     const user = await this.model.findOne({ email: userInput.email });
@@ -98,17 +96,21 @@ async createUser(userInput:UserCreateData,context:any): Promise<User> {
 
     await newUser.save();
 
-   await context.redisClient.client.HSET('users',`${userInput}`,JSON.stringify(newUser));
+    await context.redisClient.client.HSET(
+      "users",
+      `${userInput}`,
+      JSON.stringify(newUser),
+    );
 
-   const  lastData="User Created"
-    
-   const updateActivity= new activity({
-     userId:newUser._id,
-     track:[{activity:lastData}],
-     lastActivity:lastData
-   })
+    const lastData = "User Created";
 
-   updateActivity.save()
+    const updateActivity = new activity({
+      userId: newUser._id,
+      track: [{ activity: lastData }],
+      lastActivity: lastData,
+    });
+
+    updateActivity.save();
 
     return {
       ...newUser.toObject(),

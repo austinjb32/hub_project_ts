@@ -11,30 +11,34 @@ import UserDataSource from "./users/users.datasource";
 import postModel from "./posts/posts.model";
 import PostDataSource from "./posts/posts.datasource";
 
-import { TModule, userContext } from "../libs";
-import {userComposedResolvers,postComposedResolvers } from "../middleware/Composition/resolverCompostion";
+import { TModule } from "../libs";
+import {
+  userComposedResolvers,
+  postComposedResolvers,
+} from "../middleware/Composition/resolverCompostion";
 import AuthDataSource from "./auth/auth.dataSource";
 import authResolvers from "./auth/auth.resolvers";
 const typeDefs = mergeTypeDefs(
-    loadFilesSync(path.resolve(__dirname + "/**/*.graphql"), {
-      extensions: ["graphql"],
-    })
-  );
-  const resolvers = mergeResolvers(
-    loadFilesSync(path.resolve(__dirname + "/**/*.resolver.{ts,js}"), {
-      extensions: ["ts", "js"],
-    })
-  );
+  loadFilesSync(path.resolve(__dirname + "/**/*.graphql"), {
+    extensions: ["graphql"],
+  }),
+);
+// const resolvers = mergeResolvers(
+//   loadFilesSync(path.resolve(__dirname + "/**/*.resolver.{ts,js}"), {
+//     extensions: ["ts", "js"],
+//   }),
+// );
 
+const finalMergedResolvers = mergeResolvers([
+  userComposedResolvers,
+  postComposedResolvers,
+  authResolvers,
+]);
 
-  const finalMergedResolvers = mergeResolvers([userComposedResolvers,postComposedResolvers,authResolvers]);
-  
-
-
-export const Modules:TModule = {
+export const Modules: TModule = {
   models: {
     userModel: userModel,
-    postModel: postModel
+    postModel: postModel,
   },
 
   schemas: buildSubgraphSchema({
@@ -49,9 +53,6 @@ export const Modules:TModule = {
   dataSource: {
     userModelDataSource: new UserDataSource(userModel),
     postModelDataSource: new PostDataSource(postModel),
-    authModelDataSource: new AuthDataSource(userModel)
-
+    authModelDataSource: new AuthDataSource(userModel),
   },
-
 };
-  

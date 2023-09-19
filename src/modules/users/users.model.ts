@@ -1,5 +1,5 @@
-import { Schema, Document, Model,model } from 'mongoose';
-import isEmail from 'validator/lib/isEmail';
+import { Schema, Document, Model, model } from "mongoose";
+import isEmail from "validator/lib/isEmail";
 // Define the User schema
 export interface IUserSchemaDocument extends Document {
   email: string;
@@ -14,24 +14,20 @@ export interface IUserSchemaDocument extends Document {
 
 export type IUserDocument = Document<IUserSchemaDocument>;
 
-export interface IUserSchemaModel
-  extends Model<IUserSchemaDocument> {}
+export interface IUserSchemaModel extends Model<IUserSchemaDocument> {}
 
-const userSchema = new Schema<
-IUserSchemaDocument,
-IUserSchemaModel
->(
+const userSchema = new Schema<IUserSchemaDocument, IUserSchemaModel>(
   {
     email: {
       type: String,
       required: true,
       unique: true,
       index: true,
-      validate:isEmail,
+      validate: isEmail,
     },
     password: {
       type: String,
-      required: true
+      required: true,
     },
     name: {
       type: String,
@@ -40,7 +36,7 @@ IUserSchemaModel
     },
     bio: {
       type: String,
-      default: 'No Bio',
+      default: "No Bio",
       minlength: 5,
     },
     imageUrl: {
@@ -60,13 +56,13 @@ IUserSchemaModel
       default: Date.now,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Create the User model
-const UserModel = model<
-IUserSchemaDocument,
-IUserSchemaModel
->('User', userSchema);
+const UserModel = model<IUserSchemaDocument, IUserSchemaModel>(
+  "User",
+  userSchema,
+);
 
 export default UserModel;

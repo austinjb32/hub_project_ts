@@ -1,11 +1,16 @@
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from "express";
 
 interface ErrorResponse {
   message: string;
   data?: any;
 }
 
-const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (
+  error: any,
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
   console.log(error);
 
   const status: number = error.statusCode || 500;

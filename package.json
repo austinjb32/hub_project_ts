@@ -8,7 +8,11 @@
     "generate": "graphql-codegen --config codegen.yml",
     "prestart": "tsc",
     "start": "node copyFile.js",
-    "poststart": "nodemon --exec ts-node app.ts"
+    "poststart": "nodemon --exec ts-node app.ts",
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "**/*": "prettier --write --ignore-unknown"
   },
   "repository": {
     "type": "git",
@@ -34,6 +38,8 @@
     "@types/redis": "^4.0.11",
     "@types/uuid": "^9.0.3",
     "@types/validator": "^13.11.1",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
     "apollo-datasource-mongodb": "^0.5.4",
     "apollo-server": "^3.12.1",
     "apollo-server-express": "^3.12.1",
@@ -42,6 +48,7 @@
     "body-parser": "^1.20.2",
     "cors": "^2.8.5",
     "dataloader": "^2.2.2",
+    "eslint": "^8.49.0",
     "express": "^4.18.2",
     "express-graphql": "^0.12.0",
     "graphql": "^16.8.0",
@@ -71,7 +78,10 @@
     "@types/node": "^20.5.9",
     "chai": "^4.3.8",
     "cors": "^2.8.5",
+    "eslint-config-prettier": "^9.0.0",
     "graphql-scalars": "^1.22.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
     "mocha": "^10.2.0",
     "ts-node": "^10.9.1",
     "typescript-require": "^0.3.0"
