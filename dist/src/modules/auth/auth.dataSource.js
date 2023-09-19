@@ -22,20 +22,19 @@ class AuthDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         if (!hashedPassword) {
             throw new Error("Wrong Password");
         }
+        //////////////////{User Token}/////////////////////        
         const token = jsonwebtoken_1.default.sign({
             email: user.email,
             userId: user._id.toString(),
         }, "somesupersecretsecret", { expiresIn: "1h" });
-        let refreshToken;
-        if (user.isAdmin) {
-            refreshToken = jsonwebtoken_1.default.sign({
-                email: user.email,
-                userId: user._id.toString(),
-            }, "somesupersecretsecret", { expiresIn: "30d" });
-            context.refreshToken = refreshToken;
-            console.log(refreshToken);
-        }
         context.token = token;
+        //////////////////{Refresh Token}/////////////////////
+        let refreshToken;
+        refreshToken = jsonwebtoken_1.default.sign({
+            email: user.email,
+            userId: user._id.toString(),
+        }, "somesupersecretsecret", { expiresIn: "30d" });
+        context.refreshToken = refreshToken;
         const lastData = "User Logged In";
         const updateActivity = new activity_1.default({
             userId: user._id,

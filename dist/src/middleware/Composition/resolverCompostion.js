@@ -12,24 +12,24 @@ const redisCache_1 = require("../Cache/redisCache");
 const userResolversComposition = {
     Query: {
         viewUserById: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isUserDataCachedInRedis)()],
-        users: [(0, redisCache_1.isUsersCachedInRedis)()],
-        user: [(0, redisCache_1.isUsersCachedInRedis)()]
+        users: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isUsersCachedInRedis)(),],
+        user: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isUsersCachedInRedis)()]
     },
     Mutation: {
-        updateUser: [(0, auth_1.isAuthenticated)()],
-        deleteUser: [(0, auth_1.isAuthenticated)()]
+        updateUser: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
+        deleteUser: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()]
     }
 };
 const postResolversComposition = {
     Query: {
         viewPost: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isPostDataCachedInRedis)()],
-        posts: [(0, redisCache_1.isPostsCachedInRedis)()],
-        post: [(0, redisCache_1.isPostsCachedInRedis)()]
+        posts: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isPostsCachedInRedis)()],
+        post: [(0, auth_1.isAuthenticated)(), (0, redisCache_1.isPostsCachedInRedis)()]
     },
     Mutation: {
-        createPost: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
-        updatePost: [(0, auth_1.isAuthenticated)()],
-        deletePost: [(0, auth_1.isAuthenticated)()],
+        createPost: [(0, auth_1.isAuthenticated)()],
+        updatePost: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
+        deletePost: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
     }
 };
 // Compose your resolvers

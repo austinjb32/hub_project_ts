@@ -54,23 +54,23 @@ export type MutationCreateUserArgs = {
 
 
 export type MutationDeletePostArgs = {
-  postID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
 };
 
 
 export type MutationDeleteUserArgs = {
-  userID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
 };
 
 
 export type MutationUpdatePostArgs = {
   data: PostInputData;
-  postID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
 };
 
 
 export type MutationUpdateUserArgs = {
-  userID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
   userInfoData?: InputMaybe<UserInputData>;
 };
 
@@ -91,6 +91,8 @@ export type Post = {
 
 export type Query = {
   __typename?: 'Query';
+  countPosts?: Maybe<Scalars['Int']['output']>;
+  countUsers?: Maybe<Scalars['Int']['output']>;
   login: AuthData;
   post?: Maybe<Array<Maybe<Post>>>;
   postById?: Maybe<Post>;
@@ -98,6 +100,24 @@ export type Query = {
   user?: Maybe<Array<Maybe<User>>>;
   users?: Maybe<Array<Maybe<User>>>;
   viewUserById: User;
+};
+
+
+export type QueryCountPostsArgs = {
+  filter?: InputMaybe<Scalars['JSON']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sort?: InputMaybe<Scalars['JSON']['input']>;
+};
+
+
+export type QueryCountUsersArgs = {
+  filter?: InputMaybe<Scalars['JSON']['input']>;
+  limit?: InputMaybe<Scalars['Int']['input']>;
+  offset?: InputMaybe<Scalars['Int']['input']>;
+  search?: InputMaybe<Scalars['String']['input']>;
+  sort?: InputMaybe<Scalars['JSON']['input']>;
 };
 
 
@@ -117,7 +137,7 @@ export type QueryPostArgs = {
 
 
 export type QueryPostByIdArgs = {
-  postID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
 };
 
 
@@ -149,7 +169,7 @@ export type QueryUsersArgs = {
 
 
 export type QueryViewUserByIdArgs = {
-  userID: Scalars['ID']['input'];
+  dataID: Scalars['ID']['input'];
 };
 
 export type User = {
@@ -328,10 +348,10 @@ export interface JsonScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes
 export type MutationResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createPost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationCreatePostArgs, 'data'>>;
   createUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, Partial<MutationCreateUserArgs>>;
-  deletePost?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'postID'>>;
-  deleteUser?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'userID'>>;
-  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'data' | 'postID'>>;
-  updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'userID'>>;
+  deletePost?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<MutationDeletePostArgs, 'dataID'>>;
+  deleteUser?: Resolver<Maybe<ResolversTypes['JSON']>, ParentType, ContextType, RequireFields<MutationDeleteUserArgs, 'dataID'>>;
+  updatePost?: Resolver<ResolversTypes['Post'], ParentType, ContextType, RequireFields<MutationUpdatePostArgs, 'data' | 'dataID'>>;
+  updateUser?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<MutationUpdateUserArgs, 'dataID'>>;
 }>;
 
 export type PostResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Post'] = ResolversParentTypes['Post']> = ResolversObject<{
@@ -350,13 +370,15 @@ export type PostResolvers<ContextType = userContext, ParentType extends Resolver
 }>;
 
 export type QueryResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  countPosts?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryCountPostsArgs>>;
+  countUsers?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType, Partial<QueryCountUsersArgs>>;
   login?: Resolver<ResolversTypes['AuthData'], ParentType, ContextType, RequireFields<QueryLoginArgs, 'email' | 'password'>>;
   post?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, Partial<QueryPostArgs>>;
-  postById?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostByIdArgs, 'postID'>>;
+  postById?: Resolver<Maybe<ResolversTypes['Post']>, ParentType, ContextType, RequireFields<QueryPostByIdArgs, 'dataID'>>;
   posts?: Resolver<Maybe<Array<Maybe<ResolversTypes['Post']>>>, ParentType, ContextType, Partial<QueryPostsArgs>>;
   user?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUserArgs>>;
   users?: Resolver<Maybe<Array<Maybe<ResolversTypes['User']>>>, ParentType, ContextType, Partial<QueryUsersArgs>>;
-  viewUserById?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryViewUserByIdArgs, 'userID'>>;
+  viewUserById?: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<QueryViewUserByIdArgs, 'dataID'>>;
 }>;
 
 export type UserResolvers<ContextType = userContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{

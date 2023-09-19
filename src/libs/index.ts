@@ -1,5 +1,5 @@
 
-import { getPostLoader} from "../modules/posts/posts.dataLoaders";
+import { getPostFromUserIDLoader, getPostLoader} from "../modules/posts/posts.dataLoaders";
 import PostDataSource from "../modules/posts/posts.datasource";
 import { IPostSchemaModel } from "../modules/posts/posts.model";
 import { getUserLoader } from "../modules/users/users.dataLoader";
@@ -27,7 +27,8 @@ export type TModelContext = {
     accessToken: string | undefined;
     userId:string| undefined;
     userLoaders:ReturnType<typeof getUserLoader>;
-    postLoaders:ReturnType<typeof getPostLoader>;
+    postfromIDLoaders:ReturnType<typeof getPostLoader>;
+    postLoaders:ReturnType<typeof getPostFromUserIDLoader>;
     redisClient:any;
     deviceClient:any;
     // me: Nullable<JWTPayload>;

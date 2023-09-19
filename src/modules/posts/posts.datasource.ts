@@ -22,40 +22,27 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
       throw new Error("No input");
     }
 
-
-    let dataStore = await context.redisClient.client.HGET('posts',`${args}`);
-
-    let post;
-
-    if (!dataStore) {
-      post = await context.postLoaders.load(args);
-
-      console.log(post);  
+      let post:any = await context.postLoaders.load(args);
 
       if (!post) {
         throw new Error("Post not Found");
       }
-      dataStore = await context.redisClient.client.HSET(
+
+      const encodedJSON= encodetoJSON(args)
+
+      await context.redisClient.client.HSET(
         'posts',
-        `${args}`,
+        `${encodedJSON}`,
         JSON.stringify(post),
       );
-    }
 
 
+      const formattedPost = post.map((post: any) => {
+        post=this.model.hydrate(post);
+        return { ...post._doc };
+      });
 
-    post = JSON.parse(dataStore!);
-
-   
-
-    const formattedPost: Post = {
-      ...post,
-      _id: post._id,
-      createdAt: post.createdAt,
-      updatedAt: post.updatedAt,
-    };
-
-    return formattedPost;
+    return formattedPost[0];
   }catch(e){
     return e
   }
@@ -155,8 +142,6 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
 
     const encodedJSON=encodetoJSON(args)
 
-    console.log(1,encodedJSON)
-
 
     let dataStore = await context.redisClient.client.HGET("postsSearch", `${encodedJSON}`);
 
@@ -246,6 +231,77 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
   }
 
 
+  async countPosts(args: any,context:userContext) {
+
+
+    const encodedJSON=encodetoJSON(args)
+
+     const posts = await this.model
+      .find({ ...args.filter })
+      .skip(args.skip || 0)
+      .sort(args.sort || 0)
+      .limit(args.limit)
+      .countDocuments();
+
+      console.log('database')
+
+      await context.redisClient.client.HSET('postsSearch',`${encodedJSON}`,  JSON.stringify(posts));
+
+
+    if (!posts) {
+      throw new Error("No Posts Found");
+    }
+
+
+    return posts;
+  }
+
+
+
+  async countPostsWithSearch(args: any,context:userContext) {
+
+    const encodedJSON=encodetoJSON(args)
+
+    let pipeline: any[] = [];
+
+    pipeline.push({
+      $search: {
+        index: "searchPosts",
+        text: {
+          query: args.search.trim() || "",
+          path: "title",
+          fuzzy: {
+            maxEdits: 2,
+          },
+        },
+      },
+    });
+
+    pipeline.push(
+      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
+      { $skip: args.offset || 0 },
+      { $limit: args.limit || 10 },
+      { $project: { title: 1, content: 1 } }
+    );
+
+
+    const postSearch = await this.model.aggregate(pipeline);
+
+    const postSearchCount= postSearch.length
+
+    
+   await context.redisClient.client.hSet('postsSearchCount',encodedJSON,postSearchCount);
+
+    console.log('database');
+
+    if (!postSearch) {
+      return "No Posts Available";
+    }
+
+return postSearchCount;
+  
+  }
+
   ////////*************Mutations*****************//////////////////
 
 
@@ -295,8 +351,8 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
     // }
 
     async function redisUpdateOperations(post:any) {
-      const rKeys= await context.redisClient.this.HKEYS("posts")
-      await context.redisClient.HDEL("posts", rKeys);
+      await context.redisClient.hDeleteCache(postID);
+      await context.redisClient.hDeleteCache('postsSearch');
       await context.redisClient.HSET(
         "posts",
         `${postID}`,
@@ -345,8 +401,8 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
   async deletePost(postID:string, context: userContext) {
 
     async function redisDeleteOperations() {
-      const rKeys= await context.redisClient.client.HKEYS('posts')
-      await context.redisClient.HDEL("posts", rKeys);
+      await context.redisClient.hDeleteCache(postID);
+      await context.redisClient.hDeleteCache('postsSearch');
     }
 
     const foundUser = await user.findById(context.userId);

@@ -14,8 +14,6 @@ export default class AuthDataSource extends MongoDataSource<IUserSchemaDocument>
           const error = new Error("No User Found");
           throw error;
         }
-
-        console.log(user,email,password)
         
         const validLogin= loginValidation({email,password})
     
@@ -31,6 +29,9 @@ export default class AuthDataSource extends MongoDataSource<IUserSchemaDocument>
           throw new Error("Wrong Password");
         }
     
+    //////////////////{User Token}/////////////////////        
+
+
         const token = jwt.sign(
           {
             email: user.email,
@@ -40,9 +41,11 @@ export default class AuthDataSource extends MongoDataSource<IUserSchemaDocument>
           { expiresIn: "1h" }
         );
     
+        context.token=token
+        //////////////////{Refresh Token}/////////////////////
+
         let refreshToken;
     
-        if(user.isAdmin){
           refreshToken = jwt.sign(
             {
               email: user.email,
@@ -54,11 +57,8 @@ export default class AuthDataSource extends MongoDataSource<IUserSchemaDocument>
           );
           context.refreshToken=refreshToken
     
-        console.log(refreshToken);
-        }
     
-        context.token=token
-    
+
        const  lastData="User Logged In"
         
         const updateActivity= new activity({

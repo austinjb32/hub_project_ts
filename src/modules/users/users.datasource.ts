@@ -1,9 +1,6 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
-import { IUserSchemaDocument} from "./users.model"; // Import your User model here
-import { AuthData, User, UserInputData } from "../../../__generated__/resolvers-types";
-import bcrypt from "bcrypt"; // Import your types here
-import jwt from "jsonwebtoken";
-import { loginValidation, userCreationValidation } from "../../middleware/Validation/validation";
+import { IUserSchemaDocument} from "./users.model";
+import {UserInputData } from "../../../__generated__/resolvers-types";
 import { userContext } from "../../libs";
 import _ from 'lodash';
 import { encodetoJSON } from "../../utils/CustomUtils";
@@ -11,17 +8,17 @@ import activity from "../../models/activity";
 
 
 export default class UserDataSource extends MongoDataSource<IUserSchemaDocument> {
-  async viewUserById(userId: string,context:any) {
-    const user = await context.userLoaders.load(userId);
+  async viewUserById(args:any,context:any) {
+    const user = await context.userLoaders.load(args.dataID);
     if (!user) {
       return null;
     }
 
-    const encodedJSON=encodetoJSON(userId);
+    const encodedJSON=encodetoJSON(args);
 
     console.log('database')
 
-    await context.redisClient.client.HSET('usersSearch',`${encodedJSON}`,  JSON.stringify(user));
+    await context.redisClient.client.HSET('users',`${encodedJSON}`,  JSON.stringify(user));
 
  
     return {
@@ -39,7 +36,6 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
 
     const encodedJSON=encodetoJSON(args)
 
-    console.log(1,encodedJSON)
 
 
     let dataStore = await context.redisClient.client.HGET("usersSearch", `${encodedJSON}`);
@@ -82,7 +78,6 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
 
     const encodedJSON=encodetoJSON(args)
 
-    console.log(1,encodedJSON)
 
 
     let dataStore = await context.redisClient.client.HGET("usersSearch", `${encodedJSON}`);
@@ -214,30 +209,94 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
       return { ...user._doc };
     });
 
-    console.log(formattedUsers)
-
     return formattedUsers;
   }
 
+  
+  async countUsers(args: any,context:userContext) {
+
+    const encodedJSON=encodetoJSON(args);
+
+      const users = await this.model
+      .find({ ...args.filter })
+      .skip(args.skip || 0)
+      .sort(args.sort || 0)
+      .limit(args.limit)
+      .countDocuments();
+
+      console.log('database')
+
+      await context.redisClient.client.HSET('usersSearchCount',`${encodedJSON}`,  JSON.stringify(users));
+
+
+    if (!users) {
+      throw new Error("No users Found");
+    }
+ return users;
+  }
+
+  async countUsersWithSearch(args: any,context:userContext) {
+    
+    async function saveInRedis(userSearch:any){
+      const encodedJSON=encodetoJSON(args)
+  
+      await context.redisClient.client.HSET('usersSearchCount',`${encodedJSON}`,  JSON.stringify(userSearch));
+    }
+
+    let pipeline: any[] = [];
+
+    pipeline.push({
+      $search: {
+        index: "searchUsers",
+        text: {
+          query: args.search.trim() || "",
+          path: "name",
+          fuzzy: {
+            maxEdits: 2,
+          },
+        },
+      },
+    });
+
+    pipeline.push(
+      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
+      { $skip: args.offset || 0 },
+      { $limit: args.limit ||  10},
+      { $project: { name: 1, id: 1 } }
+    );
+
+    const userSearch = await this.model.aggregate(pipeline);
+
+
+
+    const userSearchCount= userSearch.length
+
+    saveInRedis(userSearchCount);
+
+    console.log('database')
+
+    if (!userSearchCount) {
+      return "No User Available";
+    }
+
+    return userSearchCount;
+  }
 
   async updateUser(userData: UserInputData, userID:string, context: userContext) {
 
     async function redisUpdateOperations(user:Object) {
-      await context.redisClient.client.hDel("users", `${userID}`);
+      await context.redisClient.hDeleteCache(userID);
+      await context.redisClient.hDeleteCache('usersSearch');
       await context.redisClient.client.hSet("users", `${userID}`,JSON.stringify(user));
     }
 
     const foundUser = await this.model.findById(userID);
     const currentUser = await this.model.findById(context.userId);
 
-    console.log(userData);
-
     // Check if the user is authorized to make the change
     if ((foundUser!._id.toString() !== context.userId) || (currentUser?.isAdmin !== true)) {
       throw new Error("You're not Authorized to make this Change");
     }
-
-    console.log(foundUser,currentUser)
 
     // Create an object with the fields to be updated
     const editUser = {
@@ -274,14 +333,9 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
 
   async deleteUser(userID:string, context: userContext) {
 
-    async function redisDeleteOperations() {
-      await context.redisClient.client.HDEL("users", `${userID}`);
-    }
 
     const foundUser = await this.model.findById(userID);
     const currentUser = await this.model.findById(context.userId);
-
-    console.log(currentUser?.isAdmin);
 
     if(!foundUser){
       throw new Error('No User Found');
@@ -294,9 +348,10 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
 
     const deleteUser= await this.model.findByIdAndDelete(userID);
 
-    await redisDeleteOperations();
-
     const  lastData="User Deleted"
+
+    await context.redisClient.hDeleteCache(foundUser._id.toString())
+    await context.redisClient.hDeleteCache('usersSearch');
     
     const updateActivity= new activity({
       userId:context.userId,

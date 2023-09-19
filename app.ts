@@ -6,7 +6,7 @@ import { ApolloServer,AuthenticationError,SyntaxError,UserInputError, Validation
 import { Modules } from './src/modules';
 import http from 'http';
 import { error } from "console";
-import { getPostLoader } from "./src/modules/posts/posts.dataLoaders";
+import { getPostFromUserIDLoader, getPostLoader } from "./src/modules/posts/posts.dataLoaders";
 import { getUserLoader } from "./src/modules/users/users.dataLoader";
 import { createClient } from "redis";
 import { CacheService } from "./src/utils/redisService";
@@ -52,6 +52,7 @@ const server=new ApolloServer({
       accessToken:req.headers.authorization,
       userLoaders:getUserLoader(),
       postLoaders:getPostLoader(),
+      postfromIDLoaders:getPostFromUserIDLoader(),
       redisClient:redisClient,
      }),
      formatError: (error) => { // Use error as a parameter

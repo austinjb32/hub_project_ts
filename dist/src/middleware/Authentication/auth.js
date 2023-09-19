@@ -35,7 +35,7 @@ const isAdmin = () => (next) => async (root, args, context, info) => {
     if (!foundUser) {
         throw new Error('No User Found');
     }
-    if (!foundUser.isAdmin) {
+    if (!((foundUser.isAdmin) || (args.dataID !== foundUser._id.toString()))) {
         throw new graphql_1.GraphQLError('You are not authorized to perform this action.', {
             extensions: {
                 code: 'FORBIDDEN',

@@ -8,19 +8,19 @@ import { AuthData, Resolvers, User } from "../../../__generated__/resolvers-type
 import { isAuthenticated, isAdmin} from "../Authentication/auth";
 import userResolvers from "../../modules/users/users.resolver";
 import postResolvers from "../../modules/posts/posts.resolver";
-import {isPostDataCachedInRedis, isPostsCachedInRedis, isUserDataCachedInRedis, isUsersCachedInRedis } from "../Cache/redisCache";
+import {isPostDataCachedInRedis, isPostsCachedInRedis, isPostsCountCachedInRedis, isUserDataCachedInRedis, isUsersCachedInRedis, isUsersCountCachedInRedis } from "../Cache/redisCache";
 
 // Define your resolvers composition
 const userResolversComposition: ResolversComposerMapping<Resolvers> = {
   Query: {
     viewUserById: [isAuthenticated(),isUserDataCachedInRedis()],
-    users:[isUsersCachedInRedis()],
-    user:[isUsersCachedInRedis()]
-    
+    users:[isAuthenticated(),isUsersCachedInRedis(),],
+    user:[isAuthenticated(),isUsersCachedInRedis()],
+    countUsers:[isUsersCountCachedInRedis()]
   },
   Mutation:{
-    updateUser:[isAuthenticated()],
-    deleteUser:[isAuthenticated()]
+    updateUser:[isAuthenticated(),isAdmin()],
+    deleteUser:[isAuthenticated(),isAdmin()]
   }
 };
 
@@ -28,14 +28,15 @@ const userResolversComposition: ResolversComposerMapping<Resolvers> = {
 const postResolversComposition: ResolversComposerMapping<Resolvers> = {
     Query: {
         viewPost:[isAuthenticated(),isPostDataCachedInRedis()],
-        posts:[isPostsCachedInRedis()],
-        post:[isPostsCachedInRedis()]
+        posts:[isAuthenticated(),isPostsCachedInRedis()],
+        post:[isAuthenticated(),isPostsCachedInRedis()],
+        countPosts:[isPostsCountCachedInRedis()]
       
     },
     Mutation:{
-        createPost:[isAuthenticated(),isAdmin()],
-        updatePost:[isAuthenticated()],
-        deletePost:[isAuthenticated()],
+        createPost:[isAuthenticated()],
+        updatePost:[isAuthenticated(),isAdmin()],
+        deletePost:[isAuthenticated(),isAdmin()]
     }
   };
 

@@ -14,24 +14,17 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             if (!args) {
                 throw new Error("No input");
             }
-            let dataStore = await context.redisClient.client.HGET('posts', `${args}`);
-            let post;
-            if (!dataStore) {
-                post = await context.postLoaders.load(args);
-                console.log(post);
-                if (!post) {
-                    throw new Error("Post not Found");
-                }
-                dataStore = await context.redisClient.client.HSET('posts', `${args}`, JSON.stringify(post));
+            let post = await context.postLoaders.load(args);
+            if (!post) {
+                throw new Error("Post not Found");
             }
-            post = JSON.parse(dataStore);
-            const formattedPost = {
-                ...post,
-                _id: post._id,
-                createdAt: post.createdAt,
-                updatedAt: post.updatedAt,
-            };
-            return formattedPost;
+            const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
+            await context.redisClient.client.HSET('posts', `${encodedJSON}`, JSON.stringify(post));
+            const formattedPost = post.map((post) => {
+                post = this.model.hydrate(post);
+                return { ...post._doc };
+            });
+            return formattedPost[0];
         }
         catch (e) {
             return e;
@@ -152,6 +145,49 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         });
         return formattedPost;
     }
+    async countPosts(args, context) {
+        const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
+        const posts = await this.model
+            .find({ ...args.filter })
+            .skip(args.skip || 0)
+            .sort(args.sort || 0)
+            .limit(args.limit)
+            .countDocuments();
+        console.log('database');
+        await context.redisClient.client.HSET('postsSearch', `${encodedJSON}`, JSON.stringify(posts));
+        if (!posts) {
+            throw new Error("No Posts Found");
+        }
+        return posts;
+    }
+    async countPostsWithSearch(args, context) {
+        async function saveInRedis(postSearch) {
+            const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
+            await context.redisClient.client.HSET('postsSearch', `${encodedJSON}`, JSON.stringify(postSearch));
+        }
+        let pipeline = [];
+        pipeline.push({
+            $search: {
+                index: "searchPosts",
+                text: {
+                    query: args.search.trim() || "",
+                    path: "title",
+                    fuzzy: {
+                        maxEdits: 2,
+                    },
+                },
+            },
+        });
+        pipeline.push({ $sort: { ...(args.sort || { updatedDate: -1 }) } }, { $skip: args.offset || 0 }, { $limit: args.limit || 10 }, { $project: { title: 1, content: 1 } });
+        const postSearch = await this.model.aggregate(pipeline);
+        const postSearchCount = postSearch.length;
+        saveInRedis(postSearch);
+        console.log('database');
+        if (!postSearch) {
+            return "No Posts Available";
+        }
+        return postSearchCount;
+    }
     ////////*************Mutations*****************//////////////////
     ///////////////********* CREATE POST ***************/////////////////////////
     async createPost(postInput, context) {
@@ -187,8 +223,8 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         //   );
         // }
         async function redisUpdateOperations(post) {
-            const rKeys = await context.redisClient.this.HKEYS("posts");
-            await context.redisClient.HDEL("posts", rKeys);
+            await context.redisClient.hDeleteCache(postID);
+            await context.redisClient.hDeleteCache('postsSearch');
             await context.redisClient.HSET("posts", `${postID}`, JSON.stringify(post));
         }
         const foundUser = await user_1.default.findById(context.userId);
@@ -218,8 +254,8 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     ///////////////********* DELETE POST ***************/////////////////////////
     async deletePost(postID, context) {
         async function redisDeleteOperations() {
-            const rKeys = await context.redisClient.client.HKEYS('posts');
-            await context.redisClient.HDEL("posts", rKeys);
+            await context.redisClient.hDeleteCache(postID);
+            await context.redisClient.hDeleteCache('postsSearch');
         }
         const foundUser = await user_1.default.findById(context.userId);
         const post = await this.model.findById(postID);

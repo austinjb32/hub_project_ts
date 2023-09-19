@@ -22,9 +22,16 @@ export default {
       }
     },
 
-    postById: async (_:any,{postID},context:userContext)=>{ 
-      return context.dataSource.postModelDataSource.viewPostById(postID,context)
-    }
+    postById: async (_:any,{dataID},context:userContext)=>{ 
+      return context.dataSource.postModelDataSource.viewPostById(dataID,context)
+    },
+    countPosts:async (_:any,args:any,context:any)=>{
+      if(args.search){
+        return context.dataSource.postModelDataSource.countPostsWithSearch(args,context)
+      }else{
+      return context.dataSource.postModelDataSource.countPosts(args,context)
+      }
+    },
    
     },
     Mutation:{
@@ -33,15 +40,15 @@ export default {
               // Call the createUser method of the UserDataSource.
               return context.dataSource.postModelDataSource.createPost(args.data,context);
     },
-    updatePost:async (_:any,{postID,data},context:userContext) => {
+    updatePost:async (_:any,{dataID,data},context:userContext) => {
                 
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.postModelDataSource.updatePost(postID,data,context)
+      return context.dataSource.postModelDataSource.updatePost(dataID,data,context)
 },
-    deletePost: async (_:any,{postID},context:userContext) => {
+    deletePost: async (_:any,{dataID},context:userContext) => {
                 
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.postModelDataSource.deletePost(postID,context);
+      return context.dataSource.postModelDataSource.deletePost(dataID,context);
 },
 },
  Post:{

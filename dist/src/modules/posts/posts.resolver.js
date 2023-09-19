@@ -20,22 +20,30 @@ exports.default = {
                 return context.dataSource.postModelDataSource.viewPosts(args, context);
             }
         },
-        postById: async (_, { postID }, context) => {
-            return context.dataSource.postModelDataSource.viewPostById(postID, context);
-        }
+        postById: async (_, { dataID }, context) => {
+            return context.dataSource.postModelDataSource.viewPostById(dataID, context);
+        },
+        countPosts: async (_, args, context) => {
+            if (args.search) {
+                return context.dataSource.postModelDataSource.countPostsWithSearch(args, context);
+            }
+            else {
+                return context.dataSource.postModelDataSource.countPosts(args, context);
+            }
+        },
     },
     Mutation: {
         createPost: async (_, args, context) => {
             // Call the createUser method of the UserDataSource.
             return context.dataSource.postModelDataSource.createPost(args.data, context);
         },
-        updatePost: async (_, { postID, data }, context) => {
+        updatePost: async (_, { dataID, data }, context) => {
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.postModelDataSource.updatePost(postID, data, context);
+            return context.dataSource.postModelDataSource.updatePost(dataID, data, context);
         },
-        deletePost: async (_, { postID }, context) => {
+        deletePost: async (_, { dataID }, context) => {
             // Call the createUser method of the UserDataSource.
-            return context.dataSource.postModelDataSource.deletePost(postID, context);
+            return context.dataSource.postModelDataSource.deletePost(dataID, context);
         },
     },
     Post: {

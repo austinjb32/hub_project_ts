@@ -8,7 +8,7 @@ import { userContext } from "../../libs";
 export default {
   Query: {
     user: async (_:any, args:any, context:any) => {
-      // Access args.userID
+      // Access args.dataID
       if(args.search){
         return context.dataSource.userModelDataSource.viewUserWithSearch(args,context);
       }
@@ -26,41 +26,50 @@ export default {
 
     },
     viewUserById: async (_:any,args:any,context:any)=>{
-      return context.dataSource.userModelDataSource.viewUserById(args.userID,context)
-    }
+      return context.dataSource.userModelDataSource.viewUserById(args,context)
+    },
+    countUsers:async (_:any,args:any,context:userContext) => {
+
+      if(args.search){
+        return context.dataSource.userModelDataSource.countUsersWithSearch(args,context);
+      }
+      
+      return context.dataSource.userModelDataSource.countUsers(args,context);
+
+    },
   },
   Mutation: {
 
-    updateUser: async (_:any,{userID,userInfoData}, context:userContext) => {
+    updateUser: async (_:any,{dataID,userInfoData}, context:userContext) => {
       // Access args.userInput
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.userModelDataSource.updateUser(userInfoData as any,userID,context)
+      return context.dataSource.userModelDataSource.updateUser(userInfoData as any,dataID,context)
     },
-    deleteUser: async (_:any, {userID}, context:userContext) => {
+    deleteUser: async (_:any, {dataID}, context:userContext) => {
       // Access args.userInput
       // Call the createUser method of the UserDataSource.
-      return context.dataSource.userModelDataSource.deleteUser(userID,context);
+      return context.dataSource.userModelDataSource.deleteUser(dataID,context);
     },
   },
   User: {
     following: async (parent:User, args, context) => {// Replace with the correct argument name
-      // You can now use userId in your resolver logic to fetch data
+      // You can now use dataID in your resolver logic to fetch data
       const followingCount = Relationship.count({
-        following: parent._id, // Use userId here
+        following: parent._id, // Use dataID here
       });
       return followingCount;
     },
     followers: async (parent:User, args, _context) => {// Replace with the correct argument name
-      // You can now use userId in your resolver logic to fetch data
+      // You can now use dataID in your resolver logic to fetch data
       const followerCount = Relationship.count({
-        user: parent._id, // Use userId here
+        user: parent._id, // Use dataID here
       });
       return followerCount;
     },
     lastActivity: async (parent:User, args, context) => {// Replace with the correct argument name
-      // You can now use userId in your resolver logic to fetch data
+      // You can now use dataID in your resolver logic to fetch data
       const latestActivity = await Activity.findOne({
-        userId: parent._id, // Replace 'userId' with the actual field name in your Activity model
+        dataID: parent._id, // Replace 'dataID' with the actual field name in your Activity model
       })
         .sort({ createdAt: -1 }) // Sort by createdAt in descending order to get the latest one
         .exec();
@@ -68,9 +77,9 @@ export default {
       return latestActivity?.lastActivity;
     },
     status: async (parent:User, args, context) => {// Replace with the correct argument name
-      // You can now use userId in your resolver logic to fetch data
+      // You can now use dataID in your resolver logic to fetch data
       const lateststatus = await UserStatus.findOne({
-        userId: parent._id, // Replace 'userId' with the actual field name in your Activity model
+        dataID: parent._id, // Replace 'dataID' with the actual field name in your Activity model
       })
         .sort({ createdAt: -1 }) // Sort by createdAt in descending order to get the latest one
         .exec();
@@ -80,7 +89,7 @@ export default {
     posts: async(parent:User, args, context)=>{
       try{
     
-        const posts= await context.postLoaders.load(parent._id!);
+        const posts= await context.postfromIDLoaders.load(parent._id!);
         const transformedPosts = posts.map((post:any) => ({
           ...post._doc,
           _id: post._id.toString(),

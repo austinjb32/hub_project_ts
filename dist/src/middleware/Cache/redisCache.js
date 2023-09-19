@@ -78,11 +78,7 @@ const isUserDataCachedInRedis = () => (next) => async (root, args, context, info
         }
         console.log('redis');
         let data = JSON.parse(dataStore);
-        const arrayPosts = Object.values(data);
-        const formattedPost = arrayPosts.map((post) => {
-            post = posts_model_1.default.hydrate(post);
-            return { ...post._doc };
-        });
+        const formattedPost = posts_model_1.default.hydrate(data);
         return formattedPost;
     }
     catch (error) {

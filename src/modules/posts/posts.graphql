@@ -21,14 +21,15 @@ input postInputData{
     }
 
 extend type Query{
-    postById(postID:ID!):Post
+    postById(dataID:ID!):Post
     post(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
     posts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[Post]
+    countPosts(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Int
 }
 
 
 extend type Mutation{
  createPost(data:postInputData!):Post!
- updatePost(postID:ID!, data:postInputData!):Post!
- deletePost(postID:ID!):JSON
+ updatePost(dataID:ID!, data:postInputData!):Post!
+ deletePost(dataID:ID!):JSON
 }

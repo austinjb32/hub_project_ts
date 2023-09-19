@@ -60,7 +60,7 @@ export const isAdmin = () => (next: (root: any,args: any,context: any,info: any)
     throw new Error('No User Found');
   }
 
-  if(!foundUser.isAdmin){
+  if(!((foundUser.isAdmin)||(args.dataID!==foundUser._id.toString()))){
     throw new GraphQLError('You are not authorized to perform this action.', {
       extensions: {
         code: 'FORBIDDEN',

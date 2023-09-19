@@ -6,14 +6,14 @@ const lodash_1 = tslib_1.__importDefault(require("lodash"));
 const CustomUtils_1 = require("../../utils/CustomUtils");
 const activity_1 = tslib_1.__importDefault(require("../../models/activity"));
 class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
-    async viewUserById(userId, context) {
-        const user = await context.userLoaders.load(userId);
+    async viewUserById(args, context) {
+        const user = await context.userLoaders.load(args.dataID);
         if (!user) {
             return null;
         }
-        const encodedJSON = (0, CustomUtils_1.encodetoJSON)(userId);
+        const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
         console.log('database');
-        await context.redisClient.client.HSET('usersSearch', `${encodedJSON}`, JSON.stringify(user));
+        await context.redisClient.client.HSET('users', `${encodedJSON}`, JSON.stringify(user));
         return {
             ...user._doc,
             _id: user._id.toString(),
@@ -25,7 +25,6 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     }
     async viewUser(args, context) {
         const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-        console.log(1, encodedJSON);
         let dataStore = await context.redisClient.client.HGET("usersSearch", `${encodedJSON}`);
         let users;
         if (!dataStore) {
@@ -142,9 +141,58 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         console.log(formattedUsers);
         return formattedUsers;
     }
+    async countUsers(args, context) {
+        const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
+        const users = await this.model
+            .find({ ...args.filter })
+            .skip(args.skip || 0)
+            .sort(args.sort || 0)
+            .limit(args.limit)
+            .countDocuments();
+        console.log('database');
+        await context.redisClient.client.HSET('usersSearchCount', `${encodedJSON}`, JSON.stringify(users));
+        if (!users) {
+            throw new Error("No users Found");
+        }
+        const arrayusers = Object.values(users);
+        const formatteduser = arrayusers.map((user) => {
+            user = this.model.hydrate(user);
+            return { ...user._doc };
+        });
+        return formatteduser;
+    }
+    async countUsersWithSearch(args, context) {
+        async function saveInRedis(userSearch) {
+            const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
+            await context.redisClient.client.HSET('usersSearchCount', `${encodedJSON}`, JSON.stringify(userSearch));
+        }
+        let pipeline = [];
+        pipeline.push({
+            $search: {
+                index: "searchUsers",
+                text: {
+                    query: args.search.trim() || "",
+                    path: "name",
+                    fuzzy: {
+                        maxEdits: 2,
+                    },
+                },
+            },
+        });
+        pipeline.push({ $sort: { ...(args.sort || { updatedDate: -1 }) } }, { $skip: args.offset || 0 }, { $limit: args.limit || 10 }, { $project: { name: 1, id: 1 } });
+        const userSearch = await this.model.aggregate(pipeline);
+        const userSearchCount = userSearch.length;
+        saveInRedis(userSearchCount);
+        console.log('database');
+        if (!userSearchCount) {
+            return "No User Available";
+        }
+        return userSearchCount;
+    }
     async updateUser(userData, userID, context) {
         async function redisUpdateOperations(user) {
-            await context.redisClient.client.hDel("users", `${userID}`);
+            await context.redisClient.hDeleteCache(userID);
+            await context.redisClient.hDeleteCache('usersSearch');
             await context.redisClient.client.hSet("users", `${userID}`, JSON.stringify(user));
         }
         const foundUser = await this.model.findById(userID);
@@ -180,12 +228,8 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         return { ...formattedUser._doc, _id: formattedUser?._id.toString() };
     }
     async deleteUser(userID, context) {
-        async function redisDeleteOperations() {
-            await context.redisClient.client.HDEL("users", `${userID}`);
-        }
         const foundUser = await this.model.findById(userID);
         const currentUser = await this.model.findById(context.userId);
-        console.log(currentUser?.isAdmin);
         if (!foundUser) {
             throw new Error('No User Found');
         }
@@ -194,8 +238,9 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
             throw new Error("You're not Authorized to make this Change");
         }
         const deleteUser = await this.model.findByIdAndDelete(userID);
-        await redisDeleteOperations();
         const lastData = "User Deleted";
+        await context.redisClient.hDeleteCache(foundUser._id.toString());
+        await context.redisClient.hDeleteCache('usersSearch');
         const updateActivity = new activity_1.default({
             userId: context.userId,
             track: [{ activity: lastData }],

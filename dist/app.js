@@ -39,6 +39,7 @@ const startServer = async function () {
             accessToken: req.headers.authorization,
             userLoaders: (0, users_dataLoader_1.getUserLoader)(),
             postLoaders: (0, posts_dataLoaders_1.getPostLoader)(),
+            postfromIDLoaders: (0, posts_dataLoaders_1.getPostFromUserIDLoader)(),
             redisClient: redisClient,
         }),
         formatError: (error) => {

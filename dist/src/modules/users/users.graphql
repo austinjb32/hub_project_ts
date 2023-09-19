@@ -51,12 +51,13 @@ input UserCreateData{
 
 
 extend type Query{
-viewUserById(userID:ID!):User!
+viewUserById(dataID:ID!):User!
 user(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
 users(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):[User]
+countUsers(search:String,sort:JSON,offset:Int,filter:JSON,limit:Int):Int
 }
 
 extend type Mutation{
-    updateUser(userID:ID!,userInfoData:UserInputData):User!
-    deleteUser(userID:ID!):JSON
+    updateUser(dataID:ID!,userInfoData:UserInputData):User!
+    deleteUser(dataID:ID!):JSON
 }
