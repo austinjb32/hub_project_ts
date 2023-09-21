@@ -16,5 +16,5 @@
   "skipDefaultLibCheck": true,
   "skipLibCheck": true
   },
-  "exclude": ["node_modules","__generated__","**/*.test.*", "**/__mocks__/*", "**/__tests__/*"]
+  "exclude": ["node_modules","__generated__","**/*.test.*", "**/__mocks__/*"]
 }

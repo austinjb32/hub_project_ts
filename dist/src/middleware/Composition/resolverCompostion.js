@@ -39,7 +39,7 @@ const userResolversComposition = {
 };
 const postResolversComposition = {
   Query: {
-    viewPost: [
+    postById: [
       (0, auth_1.isAuthenticated)(),
       (0, redisCache_1.isPostDataCachedInRedis)(),
     ],

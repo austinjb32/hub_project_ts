@@ -35,7 +35,7 @@ const userResolversComposition: ResolversComposerMapping<Resolvers> = {
 
 const postResolversComposition: ResolversComposerMapping<Resolvers> = {
   Query: {
-    viewPost: [isAuthenticated(), isPostDataCachedInRedis()],
+    postById: [isAuthenticated(), isPostDataCachedInRedis()],
     posts: [isAuthenticated(), isPostsCachedInRedis()],
     post: [isAuthenticated(), isPostsCachedInRedis()],
     countPosts: [isAuthenticated(), isPostsCountCachedInRedis()],

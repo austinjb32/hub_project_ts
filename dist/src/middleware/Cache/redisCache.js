@@ -105,10 +105,9 @@ exports.isUsersCountCachedInRedis = isUsersCountCachedInRedis;
 const isPostDataCachedInRedis =
   () => (next) => async (root, args, context, info) => {
     try {
-      const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
       const dataStore = await context.redisClient.client.HGET(
         "posts",
-        encodedJSON,
+        args.dataID,
       );
       if (!dataStore) {
         return next(root, args, context, info);
@@ -120,7 +119,7 @@ const isPostDataCachedInRedis =
         post = posts_model_1.default.hydrate(post);
         return { ...post._doc };
       });
-      return formattedPost;
+      return formattedPost[0];
     } catch (error) {
       throw error;
     }

@@ -1,8 +1,6 @@
 {
   "env": {
-    "MONGO_USER": "austinjb32",
-    "MONGO_PASSWORD": "123Gmail",
-    "MONGO_DB": "main",
+    "MONGO_URI": "mongodb+srv://austinjb32:123Gmail@cluster0.pubnynq.mongodb.net/$main",
     "BCRYPT_CODE": "pseudomeunocode"
   },
   "ext": "js,mjs,json,ts"

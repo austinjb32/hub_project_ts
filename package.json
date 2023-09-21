@@ -10,7 +10,7 @@
     "start": "node copyFile.js",
     "poststart": "nodemon --exec ts-node app.ts",
     "prepare": "husky install",
-    "test": "jest"
+    "test": "jest --maxWorkers 1"
   },
   "lint-staged": {
     "**/*": "prettier --write --ignore-unknown"
@@ -63,9 +63,9 @@
     "joi": "^17.10.1",
     "jsonwebtoken": "^9.0.2",
     "loadash": "^1.0.0",
-    "mongodb": "^6.0.0",
+    "mongodb": "^6.1.0",
     "mongodb-memory-server": "^8.15.1",
-    "mongoose": "^7.5.0",
+    "mongoose": "^7.5.2",
     "redis": "^4.6.8",
     "redis-memory-server": "^0.7.0",
     "supertest": "^6.3.3",
@@ -80,6 +80,7 @@
     "@graphql-codegen/typescript": "^4.0.1",
     "@graphql-codegen/typescript-resolvers": "^4.0.1",
     "@graphql-tools/load-files": "^7.0.0",
+    "@shelf/jest-mongodb": "^4.1.7",
     "@types/chai": "^4.3.6",
     "@types/jest": "^29.5.5",
     "@types/mocha": "^10.0.1",
@@ -89,6 +90,7 @@
     "eslint-config-prettier": "^9.0.0",
     "graphql-scalars": "^1.22.2",
     "husky": "^8.0.3",
+    "jest-puppeteer": "^9.0.0",
     "lint-staged": "^14.0.1",
     "ts-jest": "^29.1.1",
     "ts-node": "^10.9.1",

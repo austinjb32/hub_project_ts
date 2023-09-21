@@ -2,7 +2,6 @@ import mongoose from "mongoose";
 import TestApolloServer from "../../../__tests__/helpers/testServer";
 import { expect } from "chai";
 import { get } from "lodash";
-import { mockUserContext } from "../../../__tests__/mock/mockContext";
 
 export const loginAdmin = async (server: TestApolloServer) => {
   const LOGIN_QUERY = `

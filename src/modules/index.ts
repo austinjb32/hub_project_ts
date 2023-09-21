@@ -42,7 +42,7 @@ export const Modules: TModule = {
     postModel: postModel,
   },
 
-  schemas: buildSubgraphSchema({
+  schemas: makeExecutableSchema({
     typeDefs: typeDefs,
     resolvers: {
       ...finalMergedResolvers,
@@ -50,6 +50,14 @@ export const Modules: TModule = {
       ...{ DateTime: GraphQLDateTime },
     },
   }),
+  // buildSubgraphSchema({
+  //   typeDefs: typeDefs,
+  //   resolvers: {
+  //     ...finalMergedResolvers,
+  //     ...{ JSON: GraphQLJSON },
+  //     ...{ DateTime: GraphQLDateTime },
+  //   },
+  // }),
 
   dataSource: {
     userModelDataSource: new UserDataSource(userModel),

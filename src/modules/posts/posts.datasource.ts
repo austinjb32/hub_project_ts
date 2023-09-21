@@ -25,13 +25,13 @@ export default class PostDataSource extends MongoDataSource<IPostSchemaDocument>
         throw new Error("Post not Found");
       }
 
-      const encodedJSON = encodetoJSON(args);
-
       await context.redisClient.client.HSET(
         "posts",
-        `${encodedJSON}`,
+        args,
         JSON.stringify(post),
       );
+
+      console.log("database", args);
 
       const formattedPost = post.map((post: any) => {
         post = this.model.hydrate(post);

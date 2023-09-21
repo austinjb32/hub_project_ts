@@ -18,12 +18,12 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
       if (!post) {
         throw new Error("Post not Found");
       }
-      const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
       await context.redisClient.client.HSET(
         "posts",
-        `${encodedJSON}`,
+        args,
         JSON.stringify(post),
       );
+      console.log("database", args);
       const formattedPost = post.map((post) => {
         post = this.model.hydrate(post);
         return { ...post._doc };

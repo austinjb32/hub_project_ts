@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Modules = void 0;
 const tslib_1 = require("tslib");
-const subgraph_1 = require("@apollo/subgraph");
+const schema_1 = require("@graphql-tools/schema");
 const graphql_scalars_1 = require("graphql-scalars");
 const path_1 = tslib_1.__importDefault(require("path"));
 const load_files_1 = require("@graphql-tools/load-files");
@@ -47,7 +47,7 @@ exports.Modules = {
     userModel: users_model_1.default,
     postModel: posts_model_1.default,
   },
-  schemas: (0, subgraph_1.buildSubgraphSchema)({
+  schemas: (0, schema_1.makeExecutableSchema)({
     typeDefs: typeDefs,
     resolvers: {
       ...finalMergedResolvers,
@@ -55,6 +55,14 @@ exports.Modules = {
       ...{ DateTime: graphql_scalars_1.GraphQLDateTime },
     },
   }),
+  // buildSubgraphSchema({
+  //   typeDefs: typeDefs,
+  //   resolvers: {
+  //     ...finalMergedResolvers,
+  //     ...{ JSON: GraphQLJSON },
+  //     ...{ DateTime: GraphQLDateTime },
+  //   },
+  // }),
   dataSource: {
     userModelDataSource: new users_datasource_1.default(users_model_1.default),
     postModelDataSource: new posts_datasource_1.default(posts_model_1.default),

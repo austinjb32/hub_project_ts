@@ -1,14 +1,11 @@
 import express from "express";
-import bodyParser from "body-parser";
-import errorHandler from "./src/errorResponse";
+import { json } from "body-parser";
 import mongoose from "mongoose";
-import {
-  ApolloServer,
-  AuthenticationError,
-  SyntaxError,
-  UserInputError,
-  ValidationError,
-} from "apollo-server-express";
+import cors from "cors";
+import { ApolloServer } from "@apollo/server";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import { ApolloServerPluginInlineTrace } from "@apollo/server/plugin/inlineTrace";
 import { Modules } from "./src/modules";
 import http from "http";
 import {
@@ -17,87 +14,70 @@ import {
 } from "./src/modules/posts/posts.dataLoaders";
 import { getUserLoader } from "./src/modules/users/users.dataLoader";
 import { CacheService } from "./src/utils/redisService";
+import { userContext } from "./src/libs";
 // import { redisClient } from "./src/middleware/Cache/redisCache";
 
-const startServer = async function () {
-  const app = express();
-  http.createServer(app);
+const app = express();
+const httpServer = http.createServer(app);
 
-  app.use(bodyParser.json());
-
-  app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "*");
-    res.setHeader(
-      "Access-Control-Allow-Methods",
-      "OPTIONS, GET, POST, PUT, PATCH, DELETE",
-    );
-    res.setHeader(
-      "Access-Control-Allow-Headers",
-      "Content-Type, Authorization",
-    );
-    if (req.method === "OPTIONS") {
-      return res.sendStatus(200);
+const server = new ApolloServer<userContext>({
+  schema: Modules.schemas,
+  csrfPrevention: true,
+  introspection: true,
+  status400ForVariableCoercionErrors: true,
+  plugins: [
+    ApolloServerPluginDrainHttpServer({ httpServer }),
+    ApolloServerPluginInlineTrace(),
+  ],
+  formatError: (error) => {
+    if (error instanceof SyntaxError) {
+      // Check if the error is an instance of UserInputError
+      throw new Error("Syntax Failed"); // Throw a custom error message
     }
-    next();
-  });
+    return error; // Return the original error if it's not a UserInputError
+  },
+});
 
-  app.use(errorHandler);
-
+const startServer = async (listenOptions: number) => {
   const redisClient = await CacheService.start({
     redis_port: 8080,
     redis_host: "localhost",
   });
-
-  const server = new ApolloServer({
-    schema: Modules.schemas,
-    csrfPrevention: true,
-    introspection: true,
-    context: async ({ req }) => ({
-      dataSource: Modules.dataSource,
-      accessToken: req.headers.authorization,
-      userLoaders: getUserLoader(),
-      postLoaders: getPostLoader(),
-      postfromIDLoaders: getPostFromUserIDLoader(),
-      redisClient: redisClient,
-    }),
-    formatError: (error) => {
-      // Use error as a parameter
-      if (error instanceof UserInputError) {
-        // Check if the error is an instance of UserInputError
-        throw new Error("User Input error occurred"); // Throw a custom error message
-      }
-      if (error instanceof ValidationError) {
-        // Check if the error is an instance of UserInputError
-        throw new Error("Validation Failed"); // Throw a custom error message
-      }
-      if (error instanceof AuthenticationError) {
-        // Check if the error is an instance of UserInputError
-        throw new Error("Authentication Failed"); // Throw a custom error message
-      }
-      if (error instanceof SyntaxError) {
-        // Check if the error is an instance of UserInputError
-        throw new Error("Syntax Failed"); // Throw a custom error message
-      }
-      return error; // Return the original error if it's not a UserInputError
-    },
+  await server.start().then(() => {
+    httpServer.listen({ port: listenOptions });
+    console.log(`🚀 Server ready at http://localhost:${listenOptions}/graphql`);
   });
+  app.use(
+    "/graphql",
+    cors(),
+    json(),
+    expressMiddleware(server, {
+      context: async ({ req }): Promise<userContext> => ({
+        dataSource: Modules.dataSource,
+        accessToken: req.headers.authorization,
+        userLoaders: getUserLoader(),
+        postLoaders: getPostLoader(),
+        postfromIDLoaders: getPostFromUserIDLoader(),
+        redisClient: redisClient,
+        models: Modules.models,
+        userId: "",
+        deviceClient: "",
+      }),
+    }),
+  );
+};
 
-  const MONGO_URI = `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.pubnynq.mongodb.net/${process.env.MONGO_DB}`;
+const MONGO_URI = `${process.env.MONGO_URI}`;
 
-  await server.start();
-  server.applyMiddleware({ app });
+export const mongoConnect = () => {
   mongoose
     .connect(MONGO_URI)
     .then(() => {
-      app.listen({ port: 4000 }, () => {
-        console.log(
-          "Server running on port 4000 http://localhost:4000/graphql",
-        );
-      });
+      startServer(4000);
     })
     .catch((error) => {
       console.log(error);
     });
 };
 
-startServer();
+mongoConnect();

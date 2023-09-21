@@ -1,30 +1,35 @@
-import mongoose from "mongoose";
-import { MongoMemoryServer } from "mongodb-memory-server";
+// // import { MongoMemoryServer } from "mongodb-memory-server";
+// import mongoose from "mongoose";
 
-let mongo: MongoMemoryServer | null = null;
+// const DB = new MongoMemoryServer();
 
-const connectDB = async () => {
-  mongo = await MongoMemoryServer.create();
-  const uri = mongo.getUri();
+// const connect = async () => {
+//   try {
+//     await DB.start();
+//     const uri = DB.getUri();
+//     await new Promise(() => mongoose.connect(uri, {}));
+//     console.log(`Database: ${uri} (connected)`);
+//   } catch (err) {
+//     console.log("error DB Connection: ", err);
+//   }
+// };
 
-  await mongoose.connect(uri);
-};
+// const disconnect = async () => {
+//   await mongoose.connection.dropDatabase();
+//   await mongoose.connection.close();
+//   await DB.stop();
+// };
 
-const dropDB = async () => {
-  if (mongo) {
-    await mongoose.connection.dropDatabase();
-    await mongoose.connection.close();
-    await mongo.stop();
-  }
-};
+// const clearData = async () => {
+//   const { collections } = mongoose.connection;
+//   for (const key in collections) {
+//     const collection = collections[key];
+//     await collection.deleteMany({});
+//   }
+// };
 
-const dropCollections = async () => {
-  if (mongo) {
-    const collections = await mongoose.connection.db.collections();
-    for (const collection of collections) {
-      await collection.drop();
-    }
-  }
-};
-
-export const testDB = { connectDB, dropDB, dropCollections };
+// export const TestDB = {
+//   connect,
+//   disconnect,
+//   clearData,
+// };
