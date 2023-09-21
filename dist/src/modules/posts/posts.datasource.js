@@ -36,32 +36,23 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   ///////////////********* VIEW POST ***************/////////////////////////
   async viewPost(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    const dataStore = await context.redisClient.client.HGET(
+    const post = await this.model
+      .find({ ...args.filter })
+      .skip(args.skip || 0)
+      .sort(args.sort || 0)
+      .limit(args.limit || 1);
+    console.log("database");
+    await context.redisClient.client.HSET(
       "postsSearch",
       `${encodedJSON}`,
+      JSON.stringify(post),
     );
-    let post;
-    if (!dataStore) {
-      post = await this.model
-        .find({ ...args.filter })
-        .skip(args.skip || 0)
-        .sort(args.sort || 0)
-        .limit(args.limit || 1);
-      console.log("database");
-      await context.redisClient.client.HSET(
-        "postsSearch",
-        `${encodedJSON}`,
-        JSON.stringify(post),
-      );
-    } else {
-      post = this.model.hydrate(JSON.parse(dataStore));
-      console.log("redis");
-    }
     if (!post) {
       throw new Error("No Post Found");
     }
     const formattedPost = post.map((post) => {
-      return { ...post._doc, title: post.title.toString() };
+      post = this.model.hydrate(post);
+      return { ...post._doc };
     });
     return formattedPost;
   }
@@ -87,12 +78,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         },
       },
     });
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 1 },
-      { $project: { title: 1, content: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } }, { $limit: args.limit || 1 });
     const postSearch = await this.model.aggregate(pipeline);
     saveInRedis(postSearch);
     console.log("database");
@@ -107,27 +93,17 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
   ///////////////********* VIEW POSTS ***************/////////////////////////
   async viewPosts(args, context) {
     const encodedJSON = (0, CustomUtils_1.encodetoJSON)(args);
-    const dataStore = await context.redisClient.client.HGET(
+    const posts = await this.model
+      .find({ ...args.filter })
+      .skip(args.skip || 0)
+      .sort(args.sort || 0)
+      .limit(args.limit);
+    console.log("database");
+    await context.redisClient.client.HSET(
       "postsSearch",
       `${encodedJSON}`,
+      JSON.stringify(posts),
     );
-    let posts;
-    if (!dataStore) {
-      posts = await this.model
-        .find({ ...args.filter })
-        .skip(args.skip || 0)
-        .sort(args.sort || 0)
-        .limit(args.limit);
-      console.log("database");
-      await context.redisClient.client.HSET(
-        "postsSearch",
-        `${encodedJSON}`,
-        JSON.stringify(posts),
-      );
-    } else {
-      posts = JSON.parse(dataStore);
-      console.log("redis");
-    }
     if (!posts) {
       throw new Error("No Posts Found");
     }
@@ -160,12 +136,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         },
       },
     });
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { title: 1, content: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } });
     const postSearch = await this.model.aggregate(pipeline);
     saveInRedis(postSearch);
     console.log("database");
@@ -173,10 +144,9 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
       return "No Posts Available";
     }
     const formattedPost = postSearch.map((post) => {
+      post = this.model.hydrate(post);
       return {
         ...post._doc,
-        _id: post._id.toString(),
-        title: post.title.toString(),
       };
     });
     return formattedPost;
@@ -216,23 +186,17 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
       },
     });
     pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { title: 1, content: 1 } },
+      { $match: { ...args.filter } },
+      { $group: { _id: null, count: { $sum: 1 } } },
     );
-    const postSearch = await this.model.aggregate(pipeline);
-    const postSearchCount = postSearch.length;
+    const postSearchCount = await this.model.aggregate(pipeline);
     await context.redisClient.client.hSet(
       "postsSearchCount",
       encodedJSON,
-      postSearchCount,
+      postSearchCount[0].count,
     );
     console.log("database");
-    if (!postSearch) {
-      return "No Posts Available";
-    }
-    return postSearchCount;
+    return postSearchCount[0].count;
   }
   ////////*************Mutations*****************//////////////////
   ///////////////********* CREATE POST ***************/////////////////////////
@@ -275,7 +239,7 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     async function redisUpdateOperations(post) {
       await context.redisClient.hDeleteCache(postID);
       await context.redisClient.hDeleteCache("postsSearch");
-      await context.redisClient.HSET(
+      await context.redisClient.client.HSET(
         "posts",
         `${postID}`,
         JSON.stringify(post),
@@ -303,7 +267,10 @@ class PostDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
     await post.save();
     const formattedPost = post;
     await redisUpdateOperations(updatedPost);
-    return { ...formattedPost._doc };
+    return {
+      ...formattedPost._doc,
+      updatedAt: formattedPost.updatedAt.toISOString(),
+    };
   }
   ///////////////********* DELETE POST ***************/////////////////////////
   async deletePost(postID, context) {

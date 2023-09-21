@@ -6,7 +6,7 @@
     "lib": ["es2020"],
     "moduleResolution": "node",
     "esModuleInterop": true,
-    "types": ["node"],
+    "types": ["node", "jest"],
     "module": "commonjs",
   "declaration": false,
   "sourceMap": true,
@@ -16,5 +16,5 @@
   "skipDefaultLibCheck": true,
   "skipLibCheck": true
   },
-  "exclude": ["node_modules","__generated__"]
+  "exclude": ["node_modules","__generated__","**/*.test.*", "**/__mocks__/*", "**/__tests__/*"]
 }

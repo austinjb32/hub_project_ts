@@ -145,12 +145,7 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
       },
     });
 
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 1 },
-      { $project: { name: 1, id: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } }, { $limit: args.limit || 1 });
 
     const userSearch = await this.model.aggregate(pipeline);
 
@@ -196,12 +191,7 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
       },
     });
 
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { name: 1, id: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } });
 
     const userSearch = await this.model.aggregate(pipeline);
 
@@ -272,10 +262,8 @@ export default class UserDataSource extends MongoDataSource<IUserSchemaDocument>
     });
 
     pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { name: 1, id: 1 } },
+      { $match: { ...args.filter } },
+      { $group: { _id: null, count: { $sum: 1 } } },
     );
 
     const userSearch = await this.model.aggregate(pipeline);

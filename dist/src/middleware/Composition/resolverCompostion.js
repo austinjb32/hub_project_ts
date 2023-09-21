@@ -27,7 +27,10 @@ const userResolversComposition = {
       (0, auth_1.isAuthenticated)(),
       (0, redisCache_1.isUsersCachedInRedis)(),
     ],
-    countUsers: [(0, redisCache_1.isUsersCountCachedInRedis)()],
+    countUsers: [
+      (0, auth_1.isAuthenticated)(),
+      (0, redisCache_1.isUsersCountCachedInRedis)(),
+    ],
   },
   Mutation: {
     updateUser: [(0, auth_1.isAuthenticated)(), (0, auth_1.isAdmin)()],
@@ -48,7 +51,10 @@ const postResolversComposition = {
       (0, auth_1.isAuthenticated)(),
       (0, redisCache_1.isPostsCachedInRedis)(),
     ],
-    countPosts: [(0, redisCache_1.isPostsCountCachedInRedis)()],
+    countPosts: [
+      (0, auth_1.isAuthenticated)(),
+      (0, redisCache_1.isPostsCountCachedInRedis)(),
+    ],
   },
   Mutation: {
     createPost: [(0, auth_1.isAuthenticated)()],

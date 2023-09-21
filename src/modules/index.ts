@@ -1,4 +1,5 @@
 import { buildSubgraphSchema } from "@apollo/subgraph";
+import { makeExecutableSchema } from "@graphql-tools/schema";
 import { GraphQLDateTime, GraphQLJSON } from "graphql-scalars";
 
 import path from "path";

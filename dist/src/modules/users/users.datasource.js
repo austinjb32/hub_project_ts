@@ -115,12 +115,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         },
       },
     });
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 1 },
-      { $project: { name: 1, id: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } }, { $limit: args.limit || 1 });
     const userSearch = await this.model.aggregate(pipeline);
     console.log("database");
     if (!userSearch) {
@@ -155,12 +150,7 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
         },
       },
     });
-    pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { name: 1, id: 1 } },
-    );
+    pipeline.push({ $match: { ...args.filter } });
     const userSearch = await this.model.aggregate(pipeline);
     saveInRedis(userSearch);
     console.log("database");
@@ -215,10 +205,8 @@ class UserDataSource extends apollo_datasource_mongodb_1.MongoDataSource {
       },
     });
     pipeline.push(
-      { $sort: { ...(args.sort || { updatedDate: -1 }) } },
-      { $skip: args.offset || 0 },
-      { $limit: args.limit || 10 },
-      { $project: { name: 1, id: 1 } },
+      { $match: { ...args.filter } },
+      { $group: { _id: null, count: { $sum: 1 } } },
     );
     const userSearch = await this.model.aggregate(pipeline);
     const userSearchCount = userSearch.length;

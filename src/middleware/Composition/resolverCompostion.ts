@@ -25,7 +25,7 @@ const userResolversComposition: ResolversComposerMapping<Resolvers> = {
     viewUserById: [isAuthenticated(), isUserDataCachedInRedis()],
     users: [isAuthenticated(), isUsersCachedInRedis()],
     user: [isAuthenticated(), isUsersCachedInRedis()],
-    countUsers: [isUsersCountCachedInRedis()],
+    countUsers: [isAuthenticated(), isUsersCountCachedInRedis()],
   },
   Mutation: {
     updateUser: [isAuthenticated(), isAdmin()],
@@ -38,7 +38,7 @@ const postResolversComposition: ResolversComposerMapping<Resolvers> = {
     viewPost: [isAuthenticated(), isPostDataCachedInRedis()],
     posts: [isAuthenticated(), isPostsCachedInRedis()],
     post: [isAuthenticated(), isPostsCachedInRedis()],
-    countPosts: [isPostsCountCachedInRedis()],
+    countPosts: [isAuthenticated(), isPostsCountCachedInRedis()],
   },
   Mutation: {
     createPost: [isAuthenticated()],

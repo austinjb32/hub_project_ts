@@ -1,3 +1,4 @@
+import { Resolvers } from "../../../__generated__/resolvers-types";
 import { userContext } from "../../libs";
 
 export default {
@@ -20,4 +21,4 @@ export default {
       );
     },
   },
-};
+} as Resolvers;
